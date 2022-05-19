@@ -9,6 +9,8 @@
 :white_square_button: - В процессе выполнения
 	
 :red_circle: - Пропуск или отмена
+
+:large_blue_circle: - Заморожено
 	
 :white_check_mark: - Выполнено, добавлено в код
 	
@@ -21,7 +23,12 @@
 |:------------:|:------:|:--------------------------------------------------------------------------------|
 |1|:white_check_mark:|Сформировать структуру проекта на уровне папок(каталогов)|
 |2|:white_large_square::small_red_triangle_down:|wavConverter, общее: включить обработку всех описанных аргументов при вызове|
-|3|:white_square_button:|Дописать функционал exConverter|
-|4|:white_square_button:|Дописать функционал exStitcher|
-|5|:white_large_square:|FileEncoderFM|
+|3|:large_blue_circle:|Дописать функционал exConverter|
+|4|:large_blue_circle:|Дописать функционал exStitcher|
+|5|:white_square_button::small_red_triangle:|FileEncoderFM|
 |6|:white_large_square:|StreamDecoderFM|
+
+Выполнено
+|Номер задачи|Описание задачи|
+|:------------:|:--------------------------------------------------------------------------------|
+|1|Сформировать структуру проекта на уровне папок(каталогов)|
