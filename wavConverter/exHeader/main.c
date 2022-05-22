@@ -47,10 +47,18 @@
 #define ChannelsMsg					"Количество каналов: %d"																					//Сообщение для вывода количества каналов
 #define BytesInSampleMsg			"Количество байт в одной выборке со всех каналов: %d Байт\n"												//Сообщение для вывода количество байт в выборке со всех каналов сразу
 #define CodecTypeMsg				"Тип кодирования звука:"																					//Сообщение для вывода типа кодирования звука в файле
+const uint8_t wordFilenameShift=4;																												//Смещение в байтах до самого параметра
+const uint8_t wordConvertShift=7;																												//Смещение в байтах до самого параметра
+const uint8_t wordSampleRateShift=10;																											//Смещение в байтах до самого параметра
+const uint8_t wordChannelsShift=8;																												//Смещение в байтах до самого параметра
+const uint8_t wordBitsPerSampleShift=13;																										//Смещение в байтах до самого параметра
+const uint8_t wordSamplesValueShift=16;																											//Смещение в байтах до самого параметра
+const uint16_t pcmFormat=0x0001;
 const uint32_t RIFFsignature=0x52494646;																										//метка RIFF, образец
 const uint32_t WAVEsignature=0x57415645;																										//метка WAVE, образец
 const uint32_t fmtSignature=0x666D7420;																											//метка fmt , образец
 const uint32_t dataSignature=0x64617461;																										//метка data, образец
+const uint32_t dataFormatLength=0x00000010;
 char headerNameSuffix[11]="_header.dat";																										//суффикс к имени преобразуемого файла
 char headerBodySuffix[9]="_body.dat";																											//суффикс к имени преобразуемого файла
 char headerConvSuffix[9]="_conv.wav";																											//суффикс к имени преобразуемого файла
@@ -75,12 +83,6 @@ char *wordChannels="Channels";																													//Название для параме
 char *wordBitsPerSample="BitsPerSample";																										//Название для параметра обозначающего количество бит в выборке
 char *WordCountOfSamples="SamplesInChannel";																									//Название для параметра обозначающего количество выборок
 char *cursorSymbol;																																//Параметр в который будет писаться позиция курсора с которого начинается искомое слово
-const uint8_t wordFilenameShift=4;																												//Смещение в байтах до самого параметра
-const uint8_t wordConvertShift=7;																												//Смещение в байтах до самого параметра
-const uint8_t wordSampleRateShift=10;																											//Смещение в байтах до самого параметра
-const uint8_t wordChannelsShift=8;																												//Смещение в байтах до самого параметра
-const uint8_t wordBitsPerSampleShift=13;																										//Смещение в байтах до самого параметра
-const uint8_t wordSamplesValueShift=16;																											//Смещение в байтах до самого параметра
 uint8_t fileLength;																																//Общая переменная для хранения информации о длине файла
 uint32_t cursorPosit;																															//Позиция курсора до начала числа параметра
 uint32_t wordFsrcPos;																															//Позиция тега FSRC
@@ -130,6 +132,7 @@ void clearHeaderBuffer(void);																													//очистка буфера загол
 void writeDebugHeaderBuffer(void);																												//запись буфер содержимое которого выводится в отладочных целях
 void BufferReader(void);																														//функция-затычка для отладочных целей
 void printHelpMsg(void);																														//функция-справка в случае пустого вызова или вызова по командам -h.-H,-help,-HELP
+void generateHead(void);
 int WriteSettingsFile(void);																													//функция записывающая параметры преобразования
 int ReadSettingsFile(void);																														//функция считывающая параметры преобразования
 struct WaveHeader																																//структура, в которую будет писаться информация с заголовка файла
@@ -171,13 +174,26 @@ int main(int argc, char* argv[])																												//описание main и ме
 	{pringDebugMsg(36,0);}																														//если включен то вывод сообщения
 	pringDebugMsg(33,0);																														//уведомление о начале работы проги
 	pringDebugMsg(85,argc);																														//сообщение и количестве аргументов, полученных из командной строки
+	for(uint8_t i=0;i<64;i++)
+	{
+		if(!(strcmp(argv[i], "-makehead")))
+		{
+			pringDebugMsg(101,0);
+			printf(" Аргумент -makehead найден\n");
+			ReadSettingsFile();
+			cursorSymbol=strstr(fileMassive, wordConvert);
+			structModifier();
+			generateHead();
+			exit(0);
+		}
+	}
 	if(argc<2)																																	//начало проверки количества аргументов...
 	{																																			//...если аргументов меньше двух
 		printf("Не указано имя файла\n");																										//выводим сообщение о том что не указаны аргументы
 		printf("Вызов справки -h, -H, -help, -HELP\n\n");																						//и предлагаем вызвать справку
 		pringDebugMsg(84,0);																													//инициируем выход из программы с кодом 1(файл не найден)
 	}																																			//выход из тела проверки значения
-	if(argc>3)																																	//проверяем количество аргументов - их должно быть 2
+	if(argc>4)																																	//проверяем количество аргументов - их должно быть 2...4
 	{																																			//если аргументов больше 2, то
 		printf("Слишком много аргументов\n");																									//сообщаем об этом
 		pringDebugMsg(84,0);																													//и выходим из программы
@@ -216,6 +232,40 @@ int main(int argc, char* argv[])																												//описание main и ме
 	//pringDebugMsg(38,0);					//КОСТЫЛЬ ДЛЯ АВТОМАТИЗАЦИИ																			//программа сообщает от том что щас будет ждать нажатия клавиши Enter
 	//getchar();																																//ничего не делать, ждать нажатия клавиши Enter
 }																																				//конец тела main
+void generateHead(void)
+{
+	pringDebugMsg(101,0);
+	printf(" Генерирую структуру...\n");
+	memset(FileHeader,0x00,sizeof(FileHeader));
+	writeBuffer(headerAddrs[0], headerAddrs[1], RIFFsignature, headerWordSizeOf[0], headerWordInvert[0]);
+	writeBuffer(headerAddrs[1], headerAddrs[2], Wave.chunkSizeBytes, headerWordSizeOf[1], headerWordInvert[1]);
+	writeBuffer(headerAddrs[2], headerAddrs[3], WAVEsignature, headerWordSizeOf[2], headerWordInvert[2]);
+	writeBuffer(headerAddrs[3], headerAddrs[4], fmtSignature, headerWordSizeOf[3], headerWordInvert[3]);
+	writeBuffer(headerAddrs[4], headerAddrs[5], dataFormatLength, headerWordSizeOf[4], headerWordInvert[4]);
+	writeBuffer(headerAddrs[5], headerAddrs[6], pcmFormat, headerWordSizeOf[5], headerWordInvert[5]);
+	writeBuffer(headerAddrs[6], headerAddrs[7], Wave.soundChannels, headerWordSizeOf[6], headerWordInvert[6]);
+	writeBuffer(headerAddrs[7], headerAddrs[8], Wave.sampleRate, headerWordSizeOf[7], headerWordInvert[7]);
+	writeBuffer(headerAddrs[8], headerAddrs[9], Wave.byteRate, headerWordSizeOf[8], headerWordInvert[8]);
+	writeBuffer(headerAddrs[9], headerAddrs[10], Wave.BytesInSample, headerWordSizeOf[9], headerWordInvert[9]);
+	writeBuffer(headerAddrs[10], headerAddrs[11], Wave.BitDepth, headerWordSizeOf[10], headerWordInvert[10]);
+	writeBuffer(headerAddrs[11], headerAddrs[12], dataSignature, headerWordSizeOf[11], headerWordInvert[11]);
+	writeBuffer(headerAddrs[12], headerAddrs[13], Wave.chunkSizeWoutHeader, headerWordSizeOf[12], headerWordInvert[12]);
+	BufferReader();
+	pringDebugMsg(81,0);
+	FWr=fopen(fileNameHdrDat, "wb");
+	if(FWr != NULL)
+	{
+		printf(" Успех\n");
+	}
+	else
+	{
+		printf(" Не удалось создать файл %s\n",fileNameHdrDat);
+		exit(0);
+	}
+	fseek(FWr, 0, SEEK_SET);
+	fwrite(FileHeader, sizeof(uint8_t), sizeof(FileHeader), FWr);
+	fclose(FWr);
+}
 inline void printHelpMsg(void)																													//функция вывода справочной информации в консоль
 {																																				//начало тела
 	printf(StartMsg);																															//выводим версию программы
@@ -309,7 +359,7 @@ void transformFileName(char *sourceFileName, uint8_t sourceLenght, char *suffixT
 	uint8_t generatedFileNameWithSuffix;																										//инициализация переменной длины сгенерированного имени файла
 	pringDebugMsg(95,0);																														//пишем в консоль
 	pringDebugMsg(96,0);																														//пишем объявление о начале работы функции
-	for(int i=0;i<filenameWithoutExtension+11;i++)																								//начало цикла генерации имени файла
+	for(int i=0;i<filenameWithoutExtension+suffixLength;i++)																					//начало цикла генерации имени файла
 	{																																			//начало тела цикла
 		if(i<filenameWithoutExtension)																											//начало переноса имени файла
 		{																																		//начало тела
@@ -720,6 +770,7 @@ int WriteSettingsFile(void)																														//функция подготовки мо
 	writeBuffer(headerAddrs[12], headerAddrs[13], Wave.chunkSizeWoutHeader, headerWordSizeOf[12], headerWordInvert[12]);						//пишем в буфер размер файла без заголовка
 	BufferReader();																																//копируем содержимое в отдельный массив для показа его содержимого в режиме отладки
 	pringDebugMsg(81,0);																														//уведомляем об этом
+	printf("%s",fileNameHdrDat);
 	FWr=fopen(fileNameHdrDat, "wb");																											//создаем файл заголовка с раннее сгенерированным именем
 	if(FWr != NULL)																																//проверяем удалось ли создать файл
 	{																																			//начало тела(истина)
@@ -781,6 +832,7 @@ int ReadSettingsFile(void)																														//читалка параметров из 
 		while(readCursorPos<fNamtagEndPos)																										//объявляем цикл копирования массива в другой массив который нужен для дебаг целей
 		{																																		//начало тела цикла
 			fNamNameBuffer[readCursorPos]=fileName[readCursorPos];																				//посимвольно переносим массив
+			fileNameHdrDat[readCursorPos]=fileName[readCursorPos];
 			readCursorPos++;																													//инкреминируем индекс массива
 		}																																		//конец тела
 		cursorSymbol=strstr(fileMassive, wordConvert);																							//ищем тег Convert
