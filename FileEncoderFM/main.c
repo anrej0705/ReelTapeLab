@@ -8,7 +8,7 @@
 #define codePageInfo 		"Задана кодовая таблица приложения OEM CP-866\n"
 char fileBuffer[256];
 char fileName[128];
-char tempName[13]="generated";
+char tempName[9]="generated";
 char headerNameSuffix[11]="_header.dat";																										//суффикс к имени преобразуемого файла
 char headerBodySuffix[9]="_body.dat";																											//суффикс к имени преобразуемого файла
 char headerConvSuffix[12]="_conv_FM.wav";																										//суффикс к имени преобразуемого файла
@@ -48,7 +48,6 @@ uint32_t roundedVal=0;
 uint32_t numberOfIterations;
 bool binArr[8];
 uint8_t outArr[128];
-void escapeFromThisShit(void);
 void createInputArr(bool *appPtr, uint8_t sizeArr, uint8_t inputByte);
 void storeStructToFile(void);
 uint8_t createDataPacket(bool *arrIn, uint8_t *arrOut, uint8_t packetNumber);
@@ -63,7 +62,7 @@ int main(void)
 	char temp;
 	uint8_t testMas[4]={0x7E,0x9A,0x2F,0xB1};
 	uint8_t pRange=0;
-	uint8_t writeIterations=0;
+	uint32_t writeIterations=0;
 	uint32_t transferIndex=0;
 	uint32_t arrIndex=0;
 	uint32_t iterations=0;
@@ -93,13 +92,14 @@ int main(void)
 	{
 		printf("Переключение кодовой страницы не требуется\n");
 	}
-	printf("Преобразователь форматов BIN->WAV(дискретная FM модуляция) \nНу чо пацаны, я слетел с шараги так что теперь прога быстрее будет писаться. \nВсем гулям ку остальным соболезную\n");
+	printf("Преобразователь форматов BIN->WAV(дискретная FM модуляция) \n");
 	printf(StartMsg);
-	FIn=fopen("picMed1.png","rb");
+	printf("Ну чо пацаны, я слетел с шараги так что теперь прога быстрее будет писаться. \nВсем гулям ку остальным соболезную\n");
+	FIn=fopen("picLarge.png","rb");
 	FOut=fopen("test.dat", "wb");
 	fseek(FIn,0,SEEK_END);
 	fileSize=ftell(FIn);
-	printf("Размер входного файла: %d байт\n",fileSize);
+	//printf("Размер входного файла: %d байт\n",fileSize);
 	tSP=(wavSampleRate/carrierFreq)*pkgSeparatorTiming;
 	tTR=(wavSampleRate/carrierFreq)*logTrueTiming;
 	tFL=(wavSampleRate/carrierFreq)*logElseTiming;
@@ -107,11 +107,11 @@ int main(void)
 	printf("Тайминг стоп-бита: %d\nТайминг лог.0: %d\nТайминг лог.1: %d\nТайминг паузы между отправкой битов: %d\n",tSP,tTR,tFL,tSB);
 	printf("f(дискр)=%d\nf(несущ)=%d\n",wavSampleRate,carrierFreq);
 	modOfDiv=fmod(fileSize, sizeof(fileBuffer));
-	printf("Остаточный пакет байтов: %f\n",modOfDiv);
+	//printf("Остаточный пакет байтов: %f\n",modOfDiv);
 	roundedVal=round(modOfDiv);
-	printf("Округленное значение: %d\n", roundedVal);
+	//printf("Округленное значение: %d\n", roundedVal);
 	numberOfIterations=(fileSize-modOfDiv)/sizeof(fileBuffer);
-	printf("Суммарное количество блоков размером %d байт на запись: %d\n",sizeof(fileBuffer),numberOfIterations);
+	//printf("Суммарное количество блоков размером %d байт на запись: %d\n",sizeof(fileBuffer),numberOfIterations);
 	lasstBufferMas=malloc(roundedVal);
 	if(lasstBufferMas!=NULL)
 	{
@@ -128,23 +128,33 @@ int main(void)
 		}
 		else
 		{
-			printf("Запись блока №%d\n",writeIterations);
+			//printf("Запись блока №%d\n",writeIterations);
 		}
-		printf("Начало блока исходного файла %d байт\n",inputFileReadIndex);
-		printf("Начало блока на %d байт\n",arrIndex);
+		//printf("Начало блока исходного файла %d байт\n",inputFileReadIndex);
+		//printf("Начало блока на %d байт\n",arrIndex);
 		memset(bufferMas,0x00,sizeof(bufferMas));
 		fseek(FIn,inputFileReadIndex,SEEK_SET);
 		fread(fileBuffer,1,sizeof(fileBuffer),FIn);
-		printf("Размер буфера: %d байт\n",stopIteration);
+		//printf("Размер буфера: %d байт\n",stopIteration);
+		//for(uint8_t i=0;i<255;i++)
+		//{
+		//	printf("0x%02X ",(uint8_t)fileBuffer[i]);
+		//	if(i%16==0)
+		//	{
+		//		printf("\n");
+		//	}
+		//}
 		while(iterations<stopIteration)
 		{
 			createInputArr(binArr, sizeof(binArr), fileBuffer[iterations]);
 			pRange=createDataPacket(binArr, outArr, iterations);
+			//printf("Длина пакета данных %d байт\n",pRange);
 			summaryPacketLength=summaryPacketLength+pRange;
 			transferIndex=appendArray(outArr, summaryPacketLength, transferIndex);
+			//printf("Суммарный размер блока данных объемом %d пакетов: %d байт\n",iterations,transferIndex);
 			iterations++;
 		}
-		printf("Суммарный размер записанного блока: %d семлов\n",transferIndex);
+		//printf("Суммарный размер записанного блока: %d семлов\n",transferIndex);
 		inputFileReadIndex=inputFileReadIndex+iterations;
 		fseek(FOut,arrIndex,SEEK_SET);
 		fwrite(bufferMas, 1, transferIndex, FOut);
@@ -152,6 +162,8 @@ int main(void)
 		arrIndex=arrIndex+transferIndex;
 		transferIndex=0;
 	}
+	transferIndex=ftell(FOut);
+	printf("Суммарный размер записанного блока: %d байт\n",transferIndex);
 	
 	transformFileName(tempName, sizeof(tempName), headerNameSuffix, sizeof(headerNameSuffix), fileNameHdrDat);
 	transformFileName(tempName, sizeof(tempName), headerBodySuffix, sizeof(headerBodySuffix), fileNameBodDat);
@@ -161,7 +173,7 @@ int main(void)
 	fclose(FIn);
 	fclose(FOut);
 	storeStructToFile();
-	escapeFromThisShit();
+	return 0;
 }
 void createInputArr(bool *appPtr, uint8_t sizeArr, uint8_t inputByte)
 {
@@ -294,9 +306,9 @@ void transformFileName(char *sourceFileName, uint8_t sourceLenght, char *suffixT
 {																																				//начало тела функции
 	char tempMas[128];																															//инициализируем временный буфер
 	memset(tempMas,0x00,sizeof(tempMas));																										//и чистим его
-	uint8_t filenameWithoutExtension=sourceLenght-4;																							//инициализация переменной длины имени файла без расширения
+	uint8_t filenameWithoutExtension=sourceLenght;																								//инициализация переменной длины имени файла без расширения
 	uint8_t generatedFileNameWithSuffix;																										//инициализация переменной длины сгенерированного имени файла
-	for(int i=0;i<filenameWithoutExtension+11;i++)																								//начало цикла генерации имени файла
+	for(int i=0;i<filenameWithoutExtension+suffixLength;i++)																					//начало цикла генерации имени файла
 	{																																			//начало тела цикла
 		if(i<filenameWithoutExtension)																											//начало переноса имени файла
 		{																																		//начало тела
@@ -316,11 +328,4 @@ void transformFileName(char *sourceFileName, uint8_t sourceLenght, char *suffixT
 		printf("%c",arrToStore[i]);																												//и сразу же вывод в консоль
 	}																																			//конец тела цикла
 	printf("\n");																																//перенос каретки
-}
-void escapeFromThisShit(void)
-{
-	printf("Вхождение в функцию типа void\nНажми любую клавишу, чтоб съебаться из функции\n");
-	getch();
-	return;
-	printf("Съебаться через return не получилось\n");
 }
