@@ -111,9 +111,9 @@ extern void pringDebugMsg(int debugMsgNum, uint32_t firstParameter)
 				printf("[ОТЛАДКА][КОД ВЫХОДА ФУНКЦИИ] Параметр doubledoor = %d\n", firstParameter);
 				break;
 			case 25:
-				for(int i=0;i<43;i++)
+				for(int i=0;i<44;i++)
 				{
-					printf("[ОТЛАДКА][ЧТЕНИЕ] Байт из заголовка: 0x%02X\n", FileHeaderMSG[i]);
+					printf("[ОТЛАДКА][ЧТЕНИЕ] Байт из заголовка: 0x%02X (%d/43)\n", FileHeaderMSG[i],i+1);
 				}
 				break;
 			case 26:
@@ -410,6 +410,9 @@ extern void pringDebugMsg(int debugMsgNum, uint32_t firstParameter)
 				break;
 			case 100:
 				printf("Начинаю генерацию имени файла тела\n");
+				break;
+			case 101:
+				printf("[ОТЛАДКА]");
 				break;
 		}
 	}
