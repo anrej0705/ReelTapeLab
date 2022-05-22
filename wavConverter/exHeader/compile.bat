@@ -1,2 +1,2 @@
 @ECHO OFF
-gcc -m32 main.c debug.c -o Exheader.exe
+gcc -m32 main.c debug.c -o WAVHEAD.EXE
