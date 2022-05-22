@@ -56,7 +56,7 @@ uint32_t appendArray(uint8_t *arrToAppend, uint32_t reallocMemory, uint32_t buff
 void transformFileName(char *sourceFileName, uint8_t sourceLenght, char *suffixToAttach, uint8_t suffixLength, char *arrToStore);
 uint8_t *bufferMas;
 uint8_t *lasstBufferMas;
-int main(void)
+int main(int argc, char* argv[])
 {
 	unsigned int codePageNum;
 	char temp;
@@ -95,8 +95,16 @@ int main(void)
 	printf("Преобразователь форматов BIN->WAV(дискретная FM модуляция) \n");
 	printf(StartMsg);
 	printf("Ну чо пацаны, я слетел с шараги так что теперь прога быстрее будет писаться. \nВсем гулям ку остальным соболезную\n");
-	FIn=fopen("picLarge.png","rb");
-	FOut=fopen("test.dat", "wb");
+	FIn=fopen(argv[1],"rb");
+	if(!FIn&&argc<2)
+	{
+		printf("Не найден файл %s, или не указаны аргументы\n",argv[1]);
+		exit(1);
+	}
+	transformFileName(tempName, sizeof(tempName), headerNameSuffix, sizeof(headerNameSuffix), fileNameHdrDat);
+	transformFileName(tempName, sizeof(tempName), headerBodySuffix, sizeof(headerBodySuffix), fileNameBodDat);
+	transformFileName(tempName, sizeof(tempName), headerConvSuffix, sizeof(headerConvSuffix), fileNameTgtDat);
+	FOut=fopen(fileNameBodDat, "wb");
 	fseek(FIn,0,SEEK_END);
 	fileSize=ftell(FIn);
 	//printf("Размер входного файла: %d байт\n",fileSize);
@@ -164,11 +172,7 @@ int main(void)
 	}
 	transferIndex=ftell(FOut);
 	printf("Суммарный размер записанного блока: %d байт\n",transferIndex);
-	
-	transformFileName(tempName, sizeof(tempName), headerNameSuffix, sizeof(headerNameSuffix), fileNameHdrDat);
-	transformFileName(tempName, sizeof(tempName), headerBodySuffix, sizeof(headerBodySuffix), fileNameBodDat);
-	transformFileName(tempName, sizeof(tempName), headerConvSuffix, sizeof(headerConvSuffix), fileNameTgtDat);
-	
+	printf("Файл настроек convertParams.ini успешно создан\nТеперь необходимо запустить Exstitcher, чтобы сформировать WAV файл\n");
 	free(bufferMas);
 	fclose(FIn);
 	fclose(FOut);
