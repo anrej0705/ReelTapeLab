@@ -22,9 +22,10 @@
 |Номер задачи|Статус|Описание задачи|
 |:------------:|:------:|:--------------------------------------------------------------------------------|
 |1|:white_check_mark:|Сформировать структуру проекта на уровне папок(каталогов)|
-|2|:white_large_square::small_red_triangle_down:|wavConverter, общее: включить обработку всех описанных аргументов при вызове|
-|3|:large_blue_circle:|Дописать функционал exConverter|
-|4|:large_blue_circle:|Дописать функционал exStitcher|
+|2|:white_check_mark:|FileEncoderFM|
+|3|:white_large_square::small_red_triangle_down:|wavConverter, общее: включить обработку всех описанных аргументов при вызове|
+|4|:large_blue_circle:|Дописать функционал exConverter|
+|5|:large_blue_circle:|Дописать функционал exStitcher|
 |6|:white_square_button:|StreamDecoderFM|
 |7|:white_large_square:|AnalogRestorator|
 |8|:white_large_square:|appSetting|
