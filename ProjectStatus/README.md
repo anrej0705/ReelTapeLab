@@ -26,10 +26,10 @@
 |3|:large_blue_circle:|Дописать функционал exConverter|
 |4|:large_blue_circle:|Дописать функционал exStitcher|
 |6|:white_square_button:|StreamDecoderFM|
-|6|:white_square_button:|AnalogRestorator|
-|6|:white_square_button:|appSetting|
-|6|:white_square_button:|FileEncoderAM|
-|6|:white_square_button:|StreamDecoderAM|
+|7|:white_large_square:|AnalogRestorator|
+|8|:white_large_square:|appSetting|
+|9|:white_large_square:|FileEncoderAM|
+|10|:white_large_square:|StreamDecoderAM|
 
 Выполнено
 |Номер задачи|Описание задачи|
