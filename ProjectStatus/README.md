@@ -22,15 +22,17 @@
 |Номер задачи|Статус|Описание задачи|
 |:------------:|:------:|:--------------------------------------------------------------------------------|
 |1|:white_check_mark:|Сформировать структуру проекта на уровне папок(каталогов)|
-|2|:white_check_mark:|FileEncoderFM|
-|3|:white_large_square::small_red_triangle_down:|wavConverter, общее: включить обработку всех описанных аргументов при вызове|
-|4|:large_blue_circle:|Дописать функционал exConverter|
-|5|:large_blue_circle:|Дописать функционал exStitcher|
-|6|:white_square_button:|StreamDecoderFM|
+|2|:white_large_square::small_red_triangle_down:|wavConverter, общее: включить обработку всех описанных аргументов при вызове|
+|3|:large_blue_circle:|Дописать функционал exConverter|
+|4|:large_blue_circle:|Дописать функционал exStitcher|
+|5|:white_check_mark:|FileEncoderFM|
+|6|:white_square_button::small_red_triangle:|StreamDecoderFM|
 |7|:white_large_square:|AnalogRestorator|
 |8|:white_large_square:|appSetting|
 |9|:white_large_square:|FileEncoderAM|
 |10|:white_large_square:|StreamDecoderAM|
+|11|:white_large_square::small_red_triangle:|FileEncoderFM - Реализовать формирование блока метаданных в начале блока|
+|11|:white_large_square::small_red_triangle:|FileEncoderFM - Реализовать "калибровочное поле"|
 
 Выполнено
 |Номер задачи|Описание задачи|
