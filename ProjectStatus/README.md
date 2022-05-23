@@ -25,10 +25,14 @@
 |2|:white_large_square::small_red_triangle_down:|wavConverter, общее: включить обработку всех описанных аргументов при вызове|
 |3|:large_blue_circle:|Дописать функционал exConverter|
 |4|:large_blue_circle:|Дописать функционал exStitcher|
-|5|:white_square_button::small_red_triangle:|FileEncoderFM|
-|6|:white_large_square:|StreamDecoderFM|
+|6|white_square_button|StreamDecoderFM|
+|6|white_square_button|AnalogRestorator|
+|6|white_square_button|appSetting|
+|6|white_square_button|FileEncoderAM|
+|6|white_square_button|StreamDecoderAM|
 
 Выполнено
 |Номер задачи|Описание задачи|
 |:------------:|:--------------------------------------------------------------------------------|
 |1|Сформировать структуру проекта на уровне папок(каталогов)|
+|2|FileEncoderFM|
