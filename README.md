@@ -1,10 +1,8 @@
-
-
-####[Проект](https://github.com/users/anrej0705/projects/2)
+#### [Проект](https://github.com/users/anrej0705/projects/2)
  
-####[Релизы](https://github.com/anrej0705/ReelTapeLab/releases)
+#### [Релизы](https://github.com/anrej0705/ReelTapeLab/releases)
 
-####[Текущие задачи]https://github.com/users/anrej0705/projects/1/views/1)
+#### [Текущие задачи](https://github.com/users/anrej0705/projects/1/views/1)
 
 ### Системные требования
 
@@ -23,7 +21,7 @@
 
 *Подойдет любая 8/16 разрядная звуковая карта*
 
-Программы в наборе:
+### Программы в наборе:
 
 **WavePlayer** - Простой проигрыватель WAV файлов
 
