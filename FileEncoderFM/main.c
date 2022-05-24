@@ -4,7 +4,7 @@
 #include <conio.h>
 #include <windows.h>
 #include <math.h>
-#define StartMsg			"v0.0.1 build 1\n"
+#define StartMsg			"v0.0.1 build 2\n"
 #define codePageInfo 		"Задана кодовая таблица приложения OEM CP-866\n"
 char fileBuffer[256];
 char fileName[128];
@@ -12,6 +12,13 @@ char tempName[9]="generated";
 char headerNameSuffix[11]="_header.dat";																										//суффикс к имени преобразуемого файла
 char headerBodySuffix[9]="_body.dat";																											//суффикс к имени преобразуемого файла
 char headerConvSuffix[12]="_conv_FM.wav";																										//суффикс к имени преобразуемого файла
+char metadataTag[14]="FM>METADATA_MT";
+char metadataEnd[7]="FM>FILE";
+char metadataFileName[11]="MT>FILENAME";
+char metedataFileSize[11]="MT>FILESIZE";
+char metadataFileExtn[11]="MT>FILEEXTN";
+char metadataFileCrcs[11]="MT>CHECKSUM";
+char metadataFileEnds[11]="MT>ENDOFFIL";
 char fileNameHdrDat[64];																														//массив с именем заголовочного файла
 char fileNameBodDat[64];																														//массив с именем заголовочного файла
 char fileNameTgtDat[64];																														//массив с именем заголовочного файла
@@ -112,7 +119,7 @@ int main(int argc, char* argv[])
 	tTR=(wavSampleRate/carrierFreq)*logTrueTiming;
 	tFL=(wavSampleRate/carrierFreq)*logElseTiming;
 	tSB=(wavSampleRate/carrierFreq)*bitSeparatorTiming;
-	printf("Тайминг стоп-бита: %d\nТайминг лог.0: %d\nТайминг лог.1: %d\nТайминг паузы между отправкой битов: %d\n",tSP,tTR,tFL,tSB);
+	printf("Тайминг стоп-бита: %d\nТайминг лог.0: %d\nТайминг лог.1: %d\nТайминг паузы между отправкой битов: %d\n",tSP,tFL,tTR,tSB);
 	printf("f(дискр)=%d\nf(несущ)=%d\n",wavSampleRate,carrierFreq);
 	modOfDiv=fmod(fileSize, sizeof(fileBuffer));
 	//printf("Остаточный пакет байтов: %f\n",modOfDiv);
@@ -162,7 +169,7 @@ int main(int argc, char* argv[])
 			//printf("Суммарный размер блока данных объемом %d пакетов: %d байт\n",iterations,transferIndex);
 			iterations++;
 		}
-		//printf("Суммарный размер записанного блока: %d семлов\n",transferIndex);
+		printf("Суммарный размер записанного блока: %d семлов\n",transferIndex);
 		inputFileReadIndex=inputFileReadIndex+iterations;
 		fseek(FOut,arrIndex,SEEK_SET);
 		fwrite(bufferMas, 1, transferIndex, FOut);
@@ -171,7 +178,8 @@ int main(int argc, char* argv[])
 		transferIndex=0;
 	}
 	transferIndex=ftell(FOut);
-	printf("Суммарный размер записанного блока: %d байт\n",transferIndex);
+	printf("[В РАЗРАБОТКЕ] Не забудь записать количество чанков и их размеры!\n(В будущем эта функция будет автоматизирована)\n");
+	printf("Суммарный размер записанного файла: %d байт\n",transferIndex);
 	printf("Файл настроек convertParams.ini успешно создан\nТеперь необходимо запустить Exstitcher, чтобы сформировать WAV файл\n");
 	free(bufferMas);
 	fclose(FIn);
@@ -202,7 +210,7 @@ uint8_t createDataPacket(bool *arrIn, uint8_t *arrOut, uint8_t packetNumber)
 {
 	uint8_t arrPos=0;
 	uint8_t packetRange=0;
-	arrPos=arrPos=createBit(outArr, arrPos, tSP+tSB, separatorAmpHi, tSB);
+	arrPos=arrPos=createBit(outArr, arrPos, tSP, separatorAmpHi, tSB);
 	packetRange=arrPos;
 	for(int i=0;i<8;i++)
 	{
