@@ -12,7 +12,7 @@
 
 :large_blue_circle: - Заморожено
 	
-:white_check_mark: - Выполнено, добавлено в код
+:white_check_mark: - Выполнено/добавлено в код
 	
 :small_red_triangle: - Высокий приоритет
 	
@@ -30,12 +30,15 @@
 |7|:white_large_square:|AnalogRestorator|
 |8|:white_large_square:|appSetting|
 |9|:white_large_square:|FileEncoderAM|
-|10|:white_large_square:|StreamDecoderAM|
-|11|:white_large_square::small_red_triangle:|FileEncoderFM - Реализовать формирование блока метаданных в начале блока|
-|11|:white_large_square::small_red_triangle:|FileEncoderFM - Реализовать "калибровочное поле"|
+|10|:white_check_mark:|StreamDecoderAM|
+|11|:white_large_square::small_red_triangle:|FileEncoderFM - Реализовать формирование блока метаданных об исходном файле|
+|12|:white_large_square::small_red_triangle:|FileEncoderFM - Реализовать формирование блока метаданных в начале чанка|
+|13|:white_large_square::small_red_triangle:|FileEncoderFM - Реализовать "калибровочное поле"|
+|14|:white_large_square::small_red_triangle:|StreamDecoderFM - Автоматизировать процесс дешифрации|
 
 Выполнено
 |Номер задачи|Описание задачи|
 |:------------:|:--------------------------------------------------------------------------------|
 |1|Сформировать структуру проекта на уровне папок(каталогов)|
 |2|FileEncoderFM|
+|3|FileDecoderFM|
