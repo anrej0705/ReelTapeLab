@@ -4,7 +4,8 @@
 #include <conio.h>
 #include <windows.h>
 #include <math.h>
-#define StartMsg			"v0.0.1 build 2\n"
+#define bufferLength		32768
+#define StartMsg			"v0.0.2 build 3\n"
 #define codePageInfo 		"Задана кодовая таблица приложения OEM CP-866\n"
 char fileBuffer[256];
 char fileName[128];
@@ -54,15 +55,24 @@ uint32_t summaryPacketLength;
 uint32_t roundedVal=0;
 uint32_t numberOfIterations;
 bool binArr[8];
-uint8_t outArr[128];
+uint8_t outArr[256];
 void createInputArr(bool *appPtr, uint8_t sizeArr, uint8_t inputByte);
 void storeStructToFile(void);
-uint8_t createDataPacket(bool *arrIn, uint8_t *arrOut, uint8_t packetNumber);
-uint8_t createBit(uint8_t *inputMas, uint8_t startAdr, uint8_t endAdr, uint8_t charToFill, uint8_t bitPauseRange);
-uint32_t appendArray(uint8_t *arrToAppend, uint32_t reallocMemory, uint32_t bufferIndex);
+uint8_t createDataPacket(bool *arrIn, uint8_t *arrOut, uint8_t packetNumber, uint8_t analogLevel);
+uint16_t createBit(uint8_t *inputMas, uint16_t startAdr, uint16_t endAdr, uint8_t charToFill, uint8_t bitPauseRange);
+uint16_t writeCalibrate(bool overrideStruct, uint8_t lengthDetector, uint8_t lengthX, uint8_t lengthNotX);
+uint32_t appendArray(uint8_t *arrToAppend, uint32_t stopAddr, uint32_t startAddr);
 void transformFileName(char *sourceFileName, uint8_t sourceLenght, char *suffixToAttach, uint8_t suffixLength, char *arrToStore);
 uint8_t *bufferMas;
 uint8_t *lasstBufferMas;
+struct analogLvl{
+	uint8_t signalLevel;
+} aLvl;
+struct calibrationArea{
+	uint8_t DetectorPulseRange;
+	uint8_t logXPulseRange;
+	uint8_t logNotXPulseRange;
+} cArea;
 int main(int argc, char* argv[])
 {
 	unsigned int codePageNum;
@@ -78,9 +88,13 @@ int main(int argc, char* argv[])
 	uint32_t inputFileReadIndex=0;
 	bool setOutCodePageStatus;
 	bool setInCodePageStatus;
+	aLvl.signalLevel=0xFF;
+	cArea.DetectorPulseRange=0x07;
+	cArea.logXPulseRange=0x07;
+	cArea.logNotXPulseRange=0x07;
 	SoundChannels=1;
 	BitDepth=8;
-	bufferMas = malloc(32768);					//буфер под пачку семплов генерируемых из 256 байт данных. Должно хватить
+	bufferMas = malloc(bufferLength);					//буфер под пачку семплов генерируемых из 256 байт данных. Должно хватить
 	memset(bufferMas,0x00,sizeof(bufferMas));
 	codePageNum = GetConsoleOutputCP();
 	printf("Current console output codepage: %d\n",codePageNum);
@@ -133,6 +147,22 @@ int main(int argc, char* argv[])
 		printf("Задан размер буфера под остаток в %d байт\n",roundedVal);
 	}
 	stopIteration=sizeof(fileBuffer);
+	
+	fseek(FOut,0,SEEK_SET);
+	transferIndex=writeCalibrate(1,31,31,31);
+	printf("transferIndex=%d\n",transferIndex);
+	fwrite(bufferMas,1,transferIndex,FOut);
+	
+	for(uint16_t i=1;i<transferIndex+1;i++)
+	{
+		printf("0x%02X ",bufferMas[i-1]);
+		if(i%16==0)
+			printf("\n");
+	}
+	
+	fseek(FOut,transferIndex,SEEK_SET);
+	transferIndex=0;
+	
 	while(writeIterations<numberOfIterations+1)
 	{
 		writeIterations++;
@@ -162,21 +192,22 @@ int main(int argc, char* argv[])
 		while(iterations<stopIteration)
 		{
 			createInputArr(binArr, sizeof(binArr), fileBuffer[iterations]);
-			pRange=createDataPacket(binArr, outArr, iterations);
+			pRange=createDataPacket(binArr, outArr, iterations,aLvl.signalLevel);
 			//printf("Длина пакета данных %d байт\n",pRange);
 			summaryPacketLength=summaryPacketLength+pRange;
 			transferIndex=appendArray(outArr, summaryPacketLength, transferIndex);
 			//printf("Суммарный размер блока данных объемом %d пакетов: %d байт\n",iterations,transferIndex);
 			iterations++;
 		}
-		printf("Суммарный размер записанного блока: %d семлов\n",transferIndex);
+		//printf("Суммарный размер записанного блока: %d семлов\n",transferIndex);
 		inputFileReadIndex=inputFileReadIndex+iterations;
-		fseek(FOut,arrIndex,SEEK_SET);
+		//fseek(FOut,arrIndex,SEEK_SET);
 		fwrite(bufferMas, 1, transferIndex, FOut);
 		iterations=0;
 		arrIndex=arrIndex+transferIndex;
 		transferIndex=0;
 	}
+	summaryPacketLength=ftell(FOut);
 	transferIndex=ftell(FOut);
 	printf("[В РАЗРАБОТКЕ] Не забудь записать количество чанков и их размеры!\n(В будущем эта функция будет автоматизирована)\n");
 	printf("Суммарный размер записанного файла: %d байт\n",transferIndex);
@@ -186,6 +217,51 @@ int main(int argc, char* argv[])
 	fclose(FOut);
 	storeStructToFile();
 	return 0;
+}
+uint16_t writeCalibrate(bool overrideStruct, uint8_t lengthDetector, uint8_t lengthX, uint8_t lengthNotX)
+{
+	uint8_t pulseRng=0;
+	uint8_t xPulse=0;
+	uint8_t notXPulse=0;
+	uint8_t steps=0;
+	uint16_t calibratPosStart=ftell(FOut);
+	uint16_t calibratPosEnd;
+	uint16_t writeStart=0;
+	uint16_t writeEnd=0;
+	if(overrideStruct==TRUE){
+		if((lengthDetector>250)||(lengthX>250)||(lengthNotX>250))
+			{return 0;}
+		pulseRng=cArea.DetectorPulseRange;
+		xPulse=cArea.logXPulseRange;
+		notXPulse=cArea.logNotXPulseRange;
+		cArea.DetectorPulseRange=lengthDetector;
+		cArea.logXPulseRange=lengthX;
+		cArea.logNotXPulseRange=lengthNotX;}
+	for(uint8_t div8=0;div8<=cArea.DetectorPulseRange;div8=div8+4){while(steps<4){
+			calibratPosEnd=createBit(outArr, calibratPosStart, calibratPosStart+tSP, aLvl.signalLevel, tSB);
+			calibratPosStart=calibratPosEnd;
+			steps++;}calibratPosStart=0;
+		writeEnd=writeEnd+calibratPosEnd;
+		writeStart=appendArray(bufferMas, writeEnd, writeStart);
+		steps=0;}
+	for(uint8_t div8=0;div8<=cArea.logXPulseRange;div8=div8+4){while(steps<4){
+			calibratPosEnd=createBit(outArr, calibratPosStart, calibratPosStart+tTR, aLvl.signalLevel, tSB);
+			calibratPosStart=calibratPosEnd;
+			steps++;}calibratPosStart=0;
+		writeEnd=writeEnd+calibratPosEnd;
+		writeStart=appendArray(bufferMas, writeEnd, writeStart);
+		steps=0;}
+	for(uint8_t div8=0;div8<=cArea.logNotXPulseRange;div8=div8+4){while(steps<4){
+			calibratPosEnd=createBit(outArr, calibratPosStart, calibratPosStart+tFL, aLvl.signalLevel, tSB);
+			calibratPosStart=calibratPosEnd;
+			steps++;}calibratPosStart=0;
+		writeEnd=writeEnd+calibratPosEnd;
+		writeStart=appendArray(bufferMas, writeEnd, writeStart);
+		steps=0;}
+	cArea.DetectorPulseRange=pulseRng;
+	cArea.logXPulseRange=xPulse;
+	cArea.logNotXPulseRange=notXPulse;
+	return writeEnd;
 }
 void createInputArr(bool *appPtr, uint8_t sizeArr, uint8_t inputByte)
 {
@@ -206,29 +282,29 @@ void createInputArr(bool *appPtr, uint8_t sizeArr, uint8_t inputByte)
 		testBit=0;
 	}
 }
-uint8_t createDataPacket(bool *arrIn, uint8_t *arrOut, uint8_t packetNumber)
+uint8_t createDataPacket(bool *arrIn, uint8_t *arrOut, uint8_t packetNumber, uint8_t analogLevel)
 {
 	uint8_t arrPos=0;
 	uint8_t packetRange=0;
-	arrPos=arrPos=createBit(outArr, arrPos, tSP, separatorAmpHi, tSB);
+	arrPos=arrPos=createBit(outArr, arrPos, tSP, analogLevel, tSB);
 	packetRange=arrPos;
 	for(int i=0;i<8;i++)
 	{
 		if(arrIn[i]==0)
 		{
 			packetRange=packetRange+tFL+tSB;
-			arrPos=createBit(outArr, arrPos, arrPos+tFL, dataAmplitudeHi, tSB);
+			arrPos=createBit(outArr, arrPos, arrPos+tFL, analogLevel, tSB);
 		}
 		else
 		{
 			packetRange=packetRange+tTR+tSB;
-			arrPos=createBit(outArr, arrPos, arrPos+tTR, dataAmplitudeHi, tSB);
+			arrPos=createBit(outArr, arrPos, arrPos+tTR, analogLevel, tSB);
 		}
 	}
 	arrPos=createBit(outArr, arrPos, arrPos+1, nullTerminator, 0);
 	return arrPos-1;
 }
-inline uint8_t createBit(uint8_t *inputMas, uint8_t startAdr, uint8_t endAdr, uint8_t charToFill, uint8_t bitPauseRange)
+inline uint16_t createBit(uint8_t *inputMas, uint16_t startAdr, uint16_t endAdr, uint8_t charToFill, uint8_t bitPauseRange)
 {
 	uint8_t pauseChar;
 	while(startAdr<endAdr)
@@ -249,22 +325,22 @@ inline uint8_t createBit(uint8_t *inputMas, uint8_t startAdr, uint8_t endAdr, ui
 	}
 	return startAdr;
 }
-uint32_t appendArray(uint8_t *arrToAppend, uint32_t reallocMemory, uint32_t bufferIndex)
+uint32_t appendArray(uint8_t *arrToAppend, uint32_t stopAddr, uint32_t startAddr)
 {
 	uint8_t inputArrIndexStart=0;
 	char temp;
-	while(bufferIndex<reallocMemory)
+	while(startAddr<stopAddr)
 	{
-		bufferMas[bufferIndex]=outArr[inputArrIndexStart];
+		bufferMas[startAddr]=outArr[inputArrIndexStart];
 		inputArrIndexStart++;
-		bufferIndex++;
+		startAddr++;
 		temp=outArr[inputArrIndexStart];
 		if(temp==nullTerminator)
 		{
-			return bufferIndex;
+			return startAddr;
 		}
 	}
-	return bufferIndex;
+	return startAddr;
 }
 void storeStructToFile(void)																													//функция записи настроек в файл
 {																																				//начало функции
