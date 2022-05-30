@@ -15,8 +15,10 @@ uint8_t GetFileName(char* inputPath, char *receivedName){
 	uint8_t stepsTransfer=0;
 	memset(receivedName,0x00,masRange);
 	if(lastSymbolEntry==NULL){
-		while(stepsTransfer<nameLenght){
+		while(stepsTransfer<=nameLenght){
 			oname[stepsTransfer]=iname[stepsTransfer];
+			if(stepsTransfer==nameLenght)
+			{oname[stepsTransfer]=0x00;}
 			stepsTransfer++;}
 		strcpy(receivedName,oname);
 		return stepsTransfer;}
