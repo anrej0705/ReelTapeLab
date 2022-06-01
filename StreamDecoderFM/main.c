@@ -117,30 +117,30 @@ int main(void)
 		printf("Не найден файл <NULL>, или не указаны аргументы\n");
 		exit(1);
 	}
-	printf("Введи количество чанков файла, включая последний: ");
-	scanf("%d",&numberOfIterations);
-	printf("Количество чанков, включая последний: %d\n",numberOfIterations);
-	for(uint8_t i=0;i<numberOfIterations;i++)
-	{
-		printf("Введи размер чанка №%d: ",i);
-		scanf("%d",&chuksEnum[i]);
-		printf("\n");
-	}
-	printf("Введи размер последнего чанка файла: ");
-	scanf("%d",&lastChunkSize);
-	printf("Введенные размер последнего чанка: %d байт\n",lastChunkSize);
-	printf("Введенные размеры чанков:\n");
-	for(uint8_t i=0;i<numberOfIterations;i++)
-	{
-		printf("№%d: %d\n",i,chuksEnum[i]);
-	}
+	//printf("Введи количество чанков файла, включая последний: ");
+	//scanf("%d",&numberOfIterations);
+	//printf("Количество чанков, включая последний: %d\n",numberOfIterations);
+	//for(uint8_t i=0;i<numberOfIterations;i++)
+	//{
+	//	printf("Введи размер чанка №%d: ",i);
+	//	scanf("%d",&chuksEnum[i]);
+	//	printf("\n");
+	//}
+	//printf("Введи размер последнего чанка файла: ");
+	//scanf("%d",&lastChunkSize);
+	//printf("Введенные размер последнего чанка: %d байт\n",lastChunkSize);
+	//printf("Введенные размеры чанков:\n");
+	//for(uint8_t i=0;i<numberOfIterations;i++)
+	//{
+	//	printf("№%d: %d\n",i,chuksEnum[i]);
+	//}
 	fseek(FIn,0,SEEK_END);
-	//fileSize=ftell(FIn);
-	//modOfDiv=fmod(fileSize, bufferLength);
-	//printf("Остаточный пакет байтов(RAW): %f\n",modOfDiv);
-	//roundedVal=round(modOfDiv);
-	//printf("Остаточный пакет байтов: %d\n", roundedVal);
-	//numberOfIterations=(fileSize-modOfDiv)/bufferLength;
+	fileSize=ftell(FIn);
+	modOfDiv=fmod(fileSize, bufferLength);
+	printf("Остаточный пакет байтов(RAW): %f\n",modOfDiv);
+	roundedVal=round(modOfDiv);
+	printf("Остаточный пакет байтов: %d\n", roundedVal);
+	numberOfIterations=(fileSize-modOfDiv)/bufferLength;
 	if(roundedVal!=0)
 	{
 		numberOfIterations++;
@@ -150,7 +150,7 @@ int main(void)
 	FOut=fopen("test","wb");
 	fileIndex=fileIndex+43;
 	fseek(FOut,fileWriteIndex,SEEK_SET);
-	for(uint8_t steps=0;steps<numberOfIterations;steps++)
+	for(uint16_t steps=0;steps<numberOfIterations;steps++)
 	{
 		if(steps<numberOfIterations-1)
 		{
@@ -165,7 +165,8 @@ int main(void)
 		memset(decodeBuffer,0x00,sizeof(decodeBuffer));
 		memset(inputBuffer,0x00,bufferLength);
 		fseek(FIn,fileIndex,SEEK_SET);
-		fread(inputBuffer,1,chuksEnum[steps],FIn);
+		fread(inputBuffer,1,bufferLength,FIn);
+		//fread(inputBuffer,1,chuksEnum[steps],FIn);
 		bufferPos=1;
 		while(1)
 		{	
@@ -185,6 +186,14 @@ int main(void)
 uint32_t packetConverter(uint8_t *sourceArray, uint32_t arrPos, uint16_t bufferSize)
 {
 	//printf("Итерация №%d, содержимое массива по индексу %d 0x%02X\n",i,i,sourceArray[i]);
+	//for(uint8_t i=0;i<255;i++)
+	//{
+	//	printf("0x%02X ",sourceArray[i]);
+	//	if(i%15==0)
+	//	{
+	//		printf("\n");
+	//	}
+	//}
 	bool ifPulseDetector=0;
 	bool ifPulsePause=0;
 	bool bitTrig=0;
@@ -198,7 +207,7 @@ uint32_t packetConverter(uint8_t *sourceArray, uint32_t arrPos, uint16_t bufferS
 	memset(bitArr,0,sizeof(bitArr));
 	byteInvert=~dataAmplitudeHi;
 	//printf("Размер буфера данных %d байт\n",bufferSize);
-	/*printf("Поиск импульса-детектора, предполагаемый диапазон: %d...%d\n",arrPos-pulseDeviation,arrPos+tSPhigh);*/
+	//printf("Поиск импульса-детектора, предполагаемый диапазон: %d...%d\n",arrPos-pulseDeviation,arrPos+tSPhigh);
 	for(uint32_t i=arrPos-pulseDeviation;i<arrPos+tSPhigh;i++){byteCount++;
 		if(sourceArray[i]==dataAmplitudeHi){
 			if((byteCount>=tSPlow)&&(lowLimTrig!=1)){lowLimTrig=1;}}
@@ -211,7 +220,7 @@ uint32_t packetConverter(uint8_t *sourceArray, uint32_t arrPos, uint16_t bufferS
 	lowLimTrig=0;
 	higLimTrig=0;
 	byteCount=0;
-	/*printf("Поиск паузы, предполагаемый диапазон: %d...%d\n",arrPos-pulseDeviation,arrPos+tSBhigh);*/
+	//printf("Поиск паузы, предполагаемый диапазон: %d...%d\n",arrPos-pulseDeviation,arrPos+tSBhigh);
 	for(uint32_t i=arrPos-pulseDeviation;i<arrPos+tSBhigh;i++){byteCount++;
 		if(sourceArray[i]==byteInvert){
 			if((byteCount>=tSBlow)&&(lowLimTrig!=1)){lowLimTrig=1;}}
@@ -226,7 +235,7 @@ uint32_t packetConverter(uint8_t *sourceArray, uint32_t arrPos, uint16_t bufferS
 	byteCount=0;
 	arrPos=arrPos+3;
 	while(bitProceed>-1){
-		/*printf("Поиск бита %d/7 предполагаемый диапазон: %d...%d\n",bitProceed,arrPos-pulseDeviation,arrPos+tSBhigh);*/
+		//printf("Поиск бита %d/7 предполагаемый диапазон: %d...%d\n",bitProceed,arrPos-pulseDeviation,arrPos+tSBhigh);
 		for(uint32_t i=arrPos-pulseDeviation;i<arrPos+tFLhigh+pulseDeviation;i++){byteCount++;
 			if((sourceArray[i]==dataAmplitudeHi)&&(lowLimTrig!=1)){bitTrig++;
 				lowLimTrig=1;}
@@ -243,7 +252,7 @@ uint32_t packetConverter(uint8_t *sourceArray, uint32_t arrPos, uint16_t bufferS
 		byteCount=0;
 		pulseCounter=0;
 		bitProceed--;
-		/*printf("Поиск паузы, предполагаемый диапазон: %d...%d\n",arrPos-pulseDeviation,arrPos+tSBhigh);*/
+		//printf("Поиск паузы, предполагаемый диапазон: %d...%d\n",arrPos-pulseDeviation,arrPos+tSBhigh);
 		for(uint32_t i=arrPos-pulseDeviation;i<arrPos+tSBhigh;i++){byteCount++;
 			if(sourceArray[i]==byteInvert){
 				if((byteCount>=tSBlow)&&(lowLimTrig!=1)){lowLimTrig=1;}}
