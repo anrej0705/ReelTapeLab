@@ -1,6 +1,7 @@
 #include<stdint.h>
 #include<stdio.h>
 #include<string.h>
+#include<stdbool.h>
 #include "utils.h"
 uint8_t GetFileName(char* inputPath, char *receivedName){
 	uint8_t masRange=masrng(receivedName);
@@ -19,30 +20,30 @@ uint8_t GetFileName(char* inputPath, char *receivedName){
 			oname[stepsTransfer]=iname[stepsTransfer];
 			if(stepsTransfer==nameLenght)
 			{oname[stepsTransfer]=0x00;}
-			stepsTransfer++;}
+			++stepsTransfer;}
 		strcpy(receivedName,oname);
 		return stepsTransfer;}
 	while(entryPos<nameLenght){
 		oname[stepsTransfer]=iname[entryPos];
-		entryPos++;
-		stepsTransfer++;}
+		++entryPos;
+		++stepsTransfer;}
 	strcpy(receivedName,oname);
 	return stepsTransfer;}
 inline uint32_t masrng(char* inputArr){
-	for(uint32_t i=0;i<0xFFFFFFFF;i++)
-	{if(inputArr[i]==EOF){return i;}}}
+	for(uint32_t i=0;i<0xFFFFFFFF;++i)
+	{if(inputArr[i]==0x00){return i;}}}
 void transformFileName(char *sourceFileName, uint8_t sourceLenght, char *suffixToAttach, uint8_t suffixLength, char *arrToStore){
 	char procBuf[224];
 	memset(procBuf,0x00,sizeof(procBuf));
 	uint8_t filenameWithoutExtension=sourceLenght;
 	uint8_t generatedFileNameWithSuffix;
-	for(int i=0;i<filenameWithoutExtension+suffixLength;i++){
+	for(int i=0;i<filenameWithoutExtension+suffixLength;++i){
 		if(i<filenameWithoutExtension){
 			procBuf[i]=sourceFileName[i];}
 		if(i>=filenameWithoutExtension){
 			procBuf[i]=suffixToAttach[i-filenameWithoutExtension];}}
 	generatedFileNameWithSuffix = filenameWithoutExtension+suffixLength;
-	for(int i=0;i<generatedFileNameWithSuffix;i++)
+	for(int i=0;i<generatedFileNameWithSuffix;++i)
 	{arrToStore[i]=procBuf[i];}}
 void splitFileName(char* sourceFileName, char *fileName, char *fileExt){
 	char fext[16];
@@ -57,17 +58,50 @@ void splitFileName(char* sourceFileName, char *fileName, char *fileExt){
 	transferIndex=0;
 	pointPtr=0;
 	uint8_t nameLength=strlen(sname);
-	for(uint8_t i=0;i<64;i++){
+	for(uint8_t i=0;i<64;++i){
 		if(sname[i]==0x00){endOfName=i;
 			break;}}
-	for(uint8_t i=endOfName;i>0;i--){
+	for(uint8_t i=endOfName;i>0;--i){
 		if(sname[i]==0x2E){pointPtr=i;
 			break;}}
-	for(uint8_t i=pointPtr+1;i<nameLength+1;i++){
+	for(uint8_t i=pointPtr+1;i<nameLength+1;++i){
 		fext[transferIndex]=sname[i];
 		if(i==nameLength){fext[transferIndex+1]=0x00;}
-		transferIndex++;}transferIndex=0;
-	for(uint8_t i=0;i<pointPtr;i++){oname[i]=sname[i];
+		++transferIndex;}transferIndex=0;
+	for(uint8_t i=0;i<pointPtr;++i){oname[i]=sname[i];
 		if(i==pointPtr-1){oname[i+1]=0x00;}}
 	strcpy(fileExt,fext);
 	strcpy(fileName,oname);}
+bool intmas(uint64_t inputValue, uint8_t valueRangeBytes, char *arrToStore){
+	switch(valueRangeBytes){
+		case 0x01:{
+			arrToStore[0]=inputValue;
+			return 1;}
+		case 0x02:{
+			arrToStore[0]=inputValue>>8;
+			arrToStore[1]=inputValue;
+			return 1;}
+		case 0x04:{
+			arrToStore[0]=inputValue>>24;
+			arrToStore[1]=inputValue>>16;
+			arrToStore[2]=inputValue>>8;
+			arrToStore[3]=inputValue;
+			return 1;}
+		case 0x08:{
+			arrToStore[0]=inputValue>>56;
+			arrToStore[1]=inputValue>>48;
+			arrToStore[2]=inputValue>>32;
+			arrToStore[3]=inputValue>>24;
+			arrToStore[4]=inputValue>>16;
+			arrToStore[5]=inputValue>>40;
+			arrToStore[6]=inputValue>>8;
+			arrToStore[7]=inputValue;
+			return 1;}}}
+void arrcop(char *sourceArr, uint16_t startIndex, char *destinationArr, uint16_t valueOfElements){
+	for(uint16_t i=0;i<valueOfElements;++i){
+		destinationArr[startIndex]=sourceArr[i];
+		startIndex++;}}
+void mascln(char *arrToClean, uint32_t cleanStartIndex, uint32_t cleanEndIndex){
+	while(cleanStartIndex<=cleanEndIndex){
+		arrToClean[cleanStartIndex]=0x00;
+		++cleanStartIndex;}}
