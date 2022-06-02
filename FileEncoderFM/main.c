@@ -7,6 +7,7 @@
 #include <math.h>
 #include "utils.h"
 #define bufferLength		32768
+#define headerLength		4096
 #define StartMsg			"v0.0.2 build 4\n"
 #define codePageInfo 		"Задана кодовая таблица приложения OEM CP-866\n"
 char fileBuffer[256];
@@ -29,6 +30,7 @@ char metadataBckSzDec[12]="MT>BCKSZDEC>";
 char binfdataBckSzEnc[8]="BI>BSZE>";
 char binfdataBlckCr16[8]="BI>CR16>";
 char binfdataBlckCr32[8]="BI>CR32>";
+char binfdataBlckBlck[8]="BI>BLCK>";
 char fileNameHdrDat[64];
 char fileNameBodDat[64];
 char fileNameTgtDat[64];
@@ -44,7 +46,6 @@ char *wordTargFilenameEnd=">FTND";
 FILE* FIn;
 FILE* FSet;
 FILE* FOut;
-FILE* FTest;
 float modOfDiv;
 uint8_t SoundChannels;
 uint8_t BitDepth;
@@ -56,13 +57,15 @@ uint32_t roundedVal=0;
 uint32_t numberOfIterations;
 bool binArr[8];
 uint8_t outArr[256];
+uint8_t dummyArr[2]={0x00,0x00};
 void createInputArr(bool *appPtr, uint8_t sizeArr, uint8_t inputByte);
 void storeStructToFile(void);
 uint8_t createDataPacket(bool *arrIn, uint8_t *arrOut, uint8_t packetNumber, uint8_t analogLevel);
 uint16_t createBit(uint8_t *inputMas, uint16_t startAdr, uint16_t endAdr, uint8_t charToFill, uint8_t bitPauseRange);
 uint16_t writeCalibrate(bool overrideStruct, uint8_t lengthDetector, uint8_t lengthX, uint8_t lengthNotX);
-uint32_t appendArray(uint8_t *arrToAppend, uint32_t stopAddr, uint32_t startAddr);
+uint32_t appendArray(uint8_t *arrToAppend, uint32_t stopAddr, uint32_t startAddr, char *collectStr);
 uint8_t *bufferMas;
+uint8_t *headerBlk;
 uint8_t *lasstBufferMas;
 struct pulseTimings{
 	uint8_t bitSeparatorTiming;
@@ -112,11 +115,6 @@ int main(int argc, char* argv[])
 	char temp2[247];
 	char temp3[56];
 	char temp4[56];
-	char tempA1[32]="#_MASSIVEFRAGMENT_#";
-	char tempA2[80];
-	memset(tempA2,0x46,sizeof(tempA2));
-	tempA1[31]=0x00;
-	tempA2[127]=0x00;
 	char fileInfo[332];
 	char fileMeta[45];
 	char blockInfo[24];
@@ -137,6 +135,7 @@ int main(int argc, char* argv[])
 	CRCKit.CRC16Summ=0xFFFF;
 	CRCKit.CRC32Summ=0xFFFFFFFF;
 	CRCKit.CRC64Summ=0xFFFFFFFFFFFFFFFF;
+	bHed.blockCRC16=0xFFFF;
 	pulsTim.bitSeparatorTiming=1;
 	pulsTim.pkgSeparatorTiming=4;
 	pulsTim.logTrueTiming=1;
@@ -147,7 +146,8 @@ int main(int argc, char* argv[])
 	cArea.logNotXPulseRange=0x07;
 	SoundChannels=1;
 	BitDepth=8;
-	bufferMas = malloc(bufferLength);					//буфер под пачку семплов генерируемых из 256 байт данных. Должно хватить
+	headerBlk = malloc(headerLength);	
+	bufferMas = malloc(bufferLength);				//буфер под пачку семплов генерируемых из 256 байт данных. Должно хватить
 	memset(bufferMas,0x00,sizeof(bufferMas));
 	codePageNum = GetConsoleOutputCP();
 	printf("Current console output codepage: %d\n",codePageNum);
@@ -184,34 +184,19 @@ int main(int argc, char* argv[])
 	roundedVal=round(modOfDiv);
 	//printf("Округленное значение: %d\n", roundedVal);
 	numberOfIterations=(fileSize-modOfDiv)/sizeof(fileBuffer);
-	//printf("Суммарное количество блоков размером %d байт на запись: %d\n",sizeof(fileBuffer),numberOfIterations);
+	printf("Суммарное количество блоков размером %d байт на запись: %d\n",sizeof(fileBuffer),numberOfIterations);
 	lasstBufferMas=malloc(roundedVal);
 	if(lasstBufferMas!=NULL)
 	{printf("Задан размер буфера под остаток в %d байт\n",roundedVal);}
 	stopIteration=sizeof(fileBuffer);
-	
-	memset(temp3,0x00,sizeof(temp3));
-	memset(temp3,0x00,sizeof(temp4));
-	
 	fseek(FOut,0,SEEK_SET);
 	transferIndex=writeCalibrate(1,31,31,31);
-	printf("transferIndex=%d\n",transferIndex);
 	fwrite(bufferMas,1,transferIndex,FOut);
-	printf("RAW input=%s\n",argv[1]);
-	GetFileName(argv[1],temp2);
 	GetFileName(argv[1],fInf.fileSrc);
-	printf("fileName=%s\n",fileName);
-	splitFileName(temp2, temp3, temp4);
 	splitFileName(fInf.fileSrc, fInf.fileName, fInf.fileExt);
-	printf("fileName=%s\n",temp3);
-	printf("fileExt=%s\n",temp4);
-	printf("fileName=%s\n",fInf.fileName);
-	printf("fileExt=%s\n",fInf.fileExt);
 	fseek(FOut,transferIndex,SEEK_SET);
 	transferIndex=transferIndex+sizeof(fileInfo);
 	transferIndex=0;
-	
-	//генерация массива сведений о файле
 	memset(fileInfo,0x00,sizeof(fileInfo));
 	arrcop(fileSign,0,fileInfo,4);
 	fileInfo[4]=fInf.tableVer;
@@ -227,8 +212,6 @@ int main(int argc, char* argv[])
 	arrcop(filepropFileCrcs,316,fileInfo,12);
 	intmas(CRCKit.CRC32Summ,4,valBuffer);
 	arrcop(valBuffer,328,fileInfo,331);
-	
-	//генарация массива сведений о блоках
 	arrcop(metadataTag,0,fileMeta,15);
 	arrcop(metadataBlckCont,15,fileMeta,12);
 	intmas(iterations+1,4,valBuffer);
@@ -237,70 +220,34 @@ int main(int argc, char* argv[])
 	memset(valBuffer,0x00,sizeof(valBuffer));
 	intmas(0xFF,2,valBuffer);
 	arrcop(valBuffer,43,fileMeta,2);
-	
-	//генерация заголовка блока
-	//arrcop(binfdataBckSzEnc,0,blockInfo,8);
-	//arrcop(binfdataBlckCr16,8,blockInfo,8);
-	
-	FTest=fopen("test.dat","wb");
-	fseek(FTest,0,SEEK_SET);
-	fwrite(fileInfo,1,332,FTest);
-	fwrite(fileMeta,1,45,FTest);
-	fclose(FTest);
-	
-	printf("fileInfo=%s\n",fileInfo);
-	printf("fileMeta=%s\n",fileMeta);
-	printf("blockInfo=%s\n",blockInfo);
-	
-	//transferIndex=ftell(FOut);
-	//printf("SEEK POS: %d\n",transferIndex);
 	memset(bufferMas,0x00,sizeof(bufferMas));
 	arrcop(fileInfo,0,fileBuffer,0xFF);
-	for(uint8_t i=0;i<0xFF;++i)
-	{
+	for(uint8_t i=0;i<0xFF;++i){
 		createInputArr(binArr, sizeof(binArr), fileBuffer[i]);
 		pRange=createDataPacket(binArr, outArr, i,aLvl.signalLevel);
 		summaryPacketLength=summaryPacketLength+pRange;
-		transferIndex=appendArray(outArr, summaryPacketLength, transferIndex);
-	}
+		transferIndex=appendArray(outArr, summaryPacketLength, transferIndex, bufferMas);}
 	fwrite(bufferMas, 1, transferIndex, FOut);
 	transferIndex=0;
 	pRange=0;
 	memset(fileBuffer,0x00,sizeof(fileBuffer));
-	for(uint16_t i=0x00FF;i<377;++i)
-	{
-		if(pRange<=0x4C)
-		{
-			fileBuffer[pRange]=fileInfo[i];
-		}
-		if(pRange>0x4C)
-		{
-			fileBuffer[pRange]=fileMeta[transferIndex];
-			transferIndex++;
-		}
-		if(pRange==0x79)
-		{
-			break;
-		}
-		++pRange;
-	}
+	for(uint16_t i=0x00FF;i<377;++i){
+		if(pRange<=0x4C){fileBuffer[pRange]=fileInfo[i];}
+		if(pRange>0x4C){fileBuffer[pRange]=fileMeta[transferIndex];
+			transferIndex++;}
+		if(pRange==0x79){break;}++pRange;}
 	transferIndex=0;
 	pRange=0;
-	for(uint8_t i=0;i<=0x79;++i)
-	{
+	for(uint8_t i=0;i<=0x79;++i){
 		createInputArr(binArr, sizeof(binArr), fileBuffer[i]);
 		pRange=createDataPacket(binArr, outArr, i,aLvl.signalLevel);
 		summaryPacketLength=summaryPacketLength+pRange;
-		transferIndex=appendArray(outArr, summaryPacketLength, transferIndex);
-	}
+		transferIndex=appendArray(outArr, summaryPacketLength, transferIndex, bufferMas);}
 	fwrite(bufferMas, 1, transferIndex, FOut);
-	
 	summaryPacketLength=0;
 	transferIndex=0;
 	pRange=0;
-	
-	while(writeIterations<numberOfIterations+1)
-	{
+	while(writeIterations<numberOfIterations+1){
 		writeIterations++;
 		if(writeIterations>numberOfIterations){
 			printf("Запись остаточного блока №%d размером в %d байт\n",writeIterations,roundedVal);
@@ -308,29 +255,38 @@ int main(int argc, char* argv[])
 		memset(bufferMas,0x00,sizeof(bufferMas));
 		fseek(FIn,inputFileReadIndex,SEEK_SET);
 		fread(fileBuffer,1,sizeof(fileBuffer),FIn);
-		while(iterations<stopIteration)
-		{
+		while(iterations<stopIteration){
 			createInputArr(binArr, sizeof(binArr), fileBuffer[iterations]);
 			pRange=createDataPacket(binArr, outArr, iterations,aLvl.signalLevel);
-			//printf("Длина пакета данных %d байт\n",pRange);
 			summaryPacketLength=summaryPacketLength+pRange;
-			transferIndex=appendArray(outArr, summaryPacketLength, transferIndex);
-			//printf("Суммарный размер блока данных объемом %d пакетов: %d байт\n",iterations,transferIndex);
-			iterations++;
-		}
-		//printf("Суммарный размер записанного блока: %d семлов\n",transferIndex);
+			transferIndex=appendArray(outArr, summaryPacketLength, transferIndex, bufferMas);
+			iterations++;}
+		arrcop(binfdataBckSzEnc,0,blockInfo,8);
+		intmas(transferIndex,4,valBuffer);
+		arrcop(valBuffer,8,blockInfo,4);
+		intmas(transferIndex,4,valBuffer);
+		arrcop(binfdataBlckCr16,12,blockInfo,8);
+		intmas(bHed.blockCRC16,2,valBuffer);
+		arrcop(valBuffer,20,blockInfo,2);
+		arrcop(dummyArr,22,blockInfo,2);
+		dataStack(1,transferIndex);
+		transferIndex=0;
+		for(uint8_t i=0;i<24;++i){
+			createInputArr(binArr, sizeof(binArr), blockInfo[i]);
+			pRange=createDataPacket(binArr, outArr, iterations,aLvl.signalLevel);
+			summaryPacketLength=summaryPacketLength+pRange;
+			transferIndex=appendArray(outArr, summaryPacketLength, transferIndex, headerBlk);}
+		fwrite(headerBlk, 1, transferIndex, FOut);
+		transferIndex=dataStack(0,0);
 		inputFileReadIndex=inputFileReadIndex+iterations;
-		//fseek(FOut,arrIndex,SEEK_SET);
-		fwrite(bufferMas, 1, transferIndex, FOut);
 		iterations=0;
 		arrIndex=arrIndex+transferIndex;
-		transferIndex=0;
-	}
+		fwrite(bufferMas, 1, transferIndex, FOut);
+		transferIndex=0;}
 	summaryPacketLength=ftell(FOut);
 	transferIndex=ftell(FOut);
-	printf("[В РАЗРАБОТКЕ] Не забудь записать количество чанков и их размеры!\n(В будущем эта функция будет автоматизирована)\n");
 	printf("Суммарный размер записанного файла: %d байт\n",transferIndex);
-	printf("Файл настроек convertParams.ini успешно создан\nТеперь необходимо запустить Exstitcher, чтобы сформировать WAV файл\n");
+	printf("Файл настроек convertParams.ini успешно создан\nТеперь необходимо запустить WAVBIND.EXE, чтобы сформировать WAV файл\n");
 	free(bufferMas);
 	fclose(FIn);
 	fclose(FOut);
@@ -361,21 +317,21 @@ uint16_t writeCalibrate(bool overrideStruct, uint8_t lengthDetector, uint8_t len
 			calibratPosStart=calibratPosEnd;
 			steps++;}calibratPosStart=0;
 		writeEnd=writeEnd+calibratPosEnd;
-		writeStart=appendArray(bufferMas, writeEnd, writeStart);
+		writeStart=appendArray(bufferMas, writeEnd, writeStart, bufferMas);
 		steps=0;}
 	for(uint8_t div8=0;div8<=cArea.logXPulseRange;div8=div8+4){while(steps<4){
 			calibratPosEnd=createBit(outArr, calibratPosStart, calibratPosStart+pulsTim.tTR, aLvl.signalLevel, pulsTim.tSB);
 			calibratPosStart=calibratPosEnd;
 			steps++;}calibratPosStart=0;
 		writeEnd=writeEnd+calibratPosEnd;
-		writeStart=appendArray(bufferMas, writeEnd, writeStart);
+		writeStart=appendArray(bufferMas, writeEnd, writeStart, bufferMas);
 		steps=0;}
 	for(uint8_t div8=0;div8<=cArea.logNotXPulseRange;div8=div8+4){while(steps<4){
 			calibratPosEnd=createBit(outArr, calibratPosStart, calibratPosStart+pulsTim.tFL, aLvl.signalLevel, pulsTim.tSB);
 			calibratPosStart=calibratPosEnd;
 			steps++;}calibratPosStart=0;
 		writeEnd=writeEnd+calibratPosEnd;
-		writeStart=appendArray(bufferMas, writeEnd, writeStart);
+		writeStart=appendArray(bufferMas, writeEnd, writeStart, bufferMas);
 		steps=0;}
 	cArea.DetectorPulseRange=pulseRng;
 	cArea.logXPulseRange=xPulse;
@@ -421,12 +377,12 @@ inline uint16_t createBit(uint8_t *inputMas, uint16_t startAdr, uint16_t endAdr,
 	while(startAdr<endAdr){inputMas[startAdr]=pauseChar;
 		startAdr++;}return startAdr;
 }
-uint32_t appendArray(uint8_t *arrToAppend, uint32_t stopAddr, uint32_t startAddr)
+uint32_t appendArray(uint8_t *arrToAppend, uint32_t stopAddr, uint32_t startAddr, char *collectStr)
 {
 	uint8_t inputArrIndexStart=0;
 	char temp;
 	while(startAddr<stopAddr){
-		bufferMas[startAddr]=outArr[inputArrIndexStart];
+		collectStr[startAddr]=outArr[inputArrIndexStart];
 		inputArrIndexStart++;
 		startAddr++;
 		temp=outArr[inputArrIndexStart];
