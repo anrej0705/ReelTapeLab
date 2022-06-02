@@ -3,6 +3,11 @@
 #include<string.h>
 #include<stdbool.h>
 #include "utils.h"
+////////////////////////////////////////////////////////////////////////////
+#define dataStackDepth	8	//ЗДЕСЬ: ЗАДАЕТ ГЛУБИНУ СТЕКА В DWORD(UINT32_T)
+////////////////////////////////////////////////////////////////////////////
+uint8_t stackLevel=0;
+uint32_t stackBuffer[dataStackDepth];
 uint8_t GetFileName(char* inputPath, char *receivedName){
 	uint8_t masRange=masrng(receivedName);
 	char iname[256];
@@ -105,3 +110,14 @@ void mascln(char *arrToClean, uint32_t cleanStartIndex, uint32_t cleanEndIndex){
 	while(cleanStartIndex<=cleanEndIndex){
 		arrToClean[cleanStartIndex]=0x00;
 		++cleanStartIndex;}}
+uint32_t dataStack(bool direction, uint32_t inputValue){
+	uint32_t popRegister;
+	if((direction==1)&&(stackLevel<sizeof(stackBuffer))){
+		++stackLevel;
+		stackBuffer[stackLevel]=inputValue;
+		//stackLevel=stackLevel+8;
+		return stackLevel;}
+	if((direction==0)&&(stackLevel>=0)){
+		popRegister=stackBuffer[stackLevel];
+		--stackLevel;
+		return popRegister;}return 0;}

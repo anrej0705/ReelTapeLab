@@ -3,6 +3,7 @@
 bool intmas(uint64_t inputValue, uint8_t valueRangeBytes, char *arrToStore);
 uint8_t GetFileName(char* inputPath, char *receivedName);
 uint32_t masrng(char* inputArr);
+uint32_t dataStack(bool direction, uint32_t inputValue);
 void transformFileName(char *sourceFileName, uint8_t sourceLenght, char *suffixToAttach, uint8_t suffixLength, char *arrToStore);
 void splitFileName(char* sourceFileName, char *fileName, char *fileExt);
 void arrcop(char *sourceArr, uint16_t startIndex, char *destinationArr, uint16_t valueOfElements);
