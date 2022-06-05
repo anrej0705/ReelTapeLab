@@ -8,7 +8,7 @@
 #include "utils.h"
 #define bufferLength		32768
 #define headerLength		4096
-#define StartMsg			"v0.0.2 build 4\n"
+#define StartMsg			"v0.0.2 build 6\n"
 #define codePageInfo 		"Задана кодовая таблица приложения OEM CP-866\n"
 char fileBuffer[256];
 char fileName[128];
@@ -27,7 +27,7 @@ char filepropFileCrcs[12]="FP>CHECKSUM>";
 char metadataFileEnds[12]="FM>ENDOFFIL>";
 char metadataBlckCont[12]="MT>BLCKCONT>";
 char metadataBckSzDec[12]="MT>BCKSZDEC>";
-char binfdataBckSzEnc[8]="BI>BSZE>";
+char binfdataBckSzEnc[8]="BI>BSCN>";
 char binfdataBlckCr16[8]="BI>CR16>";
 char binfdataBlckCr32[8]="BI>CR32>";
 char binfdataBlckBlck[8]="BI>BLCK>";
@@ -115,7 +115,7 @@ int main(int argc, char* argv[])
 	char temp2[247];
 	char temp3[56];
 	char temp4[56];
-	char fileInfo[332];
+	char fileInfo[333];
 	char fileMeta[45];
 	char blockInfo[24];
 	memset(fileMeta,0x00,sizeof(fileMeta));
@@ -206,12 +206,12 @@ int main(int argc, char* argv[])
 	arrcop(fInf.fileSrc,35,fileInfo,247);
 	intmas(fileSize,4,valBuffer);
 	arrcop(filepropFileSize,281,fileInfo,12);
-	arrcop(valBuffer,292,fileInfo,4);
-	arrcop(filepropFileExtn,296,fileInfo,12);
-	arrcop(fInf.fileExt,308,fileInfo,8);
-	arrcop(filepropFileCrcs,316,fileInfo,12);
+	arrcop(valBuffer,293,fileInfo,4);
+	arrcop(filepropFileExtn,297,fileInfo,12);
+	arrcop(fInf.fileExt,309,fileInfo,8);
+	arrcop(filepropFileCrcs,317,fileInfo,12);
 	intmas(CRCKit.CRC32Summ,4,valBuffer);
-	arrcop(valBuffer,328,fileInfo,331);
+	arrcop(valBuffer,329,fileInfo,332);
 	arrcop(metadataTag,0,fileMeta,15);
 	arrcop(metadataBlckCont,15,fileMeta,12);
 	intmas(iterations+1,4,valBuffer);
