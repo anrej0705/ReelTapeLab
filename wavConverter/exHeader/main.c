@@ -174,6 +174,12 @@ int main(int argc, char* argv[])																												//описание main и ме
 	{pringDebugMsg(36,0);}																														//если включен то вывод сообщени€
 	pringDebugMsg(33,0);																														//уведомление о начале работы проги
 	pringDebugMsg(85,argc);																														//сообщение и количестве аргументов, полученных из командной строки
+	if(argc<=1)
+	{
+		pringDebugMsg(101,0);
+		printf(" Ќе указаны аргументы! ¬ызов справки -help\n");
+		return 0;
+	}
 	for(uint8_t i=0;i<64;i++)
 	{
 		if(!(strcmp(argv[i], "-makehead")))
