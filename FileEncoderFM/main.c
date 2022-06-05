@@ -231,9 +231,9 @@ int main(int argc, char* argv[])
 	transferIndex=0;
 	pRange=0;
 	memset(fileBuffer,0x00,sizeof(fileBuffer));
-	for(uint16_t i=0x00FF;i<377;++i){
-		if(pRange<=0x4C){fileBuffer[pRange]=fileInfo[i];}
-		if(pRange>0x4C){fileBuffer[pRange]=fileMeta[transferIndex];
+	for(uint16_t i=0x00FF;i<378;++i){
+		if(pRange<=0x4D){fileBuffer[pRange]=fileInfo[i];}
+		if(pRange>0x4D){fileBuffer[pRange]=fileMeta[transferIndex];
 			transferIndex++;}
 		if(pRange==0x79){break;}++pRange;}
 	transferIndex=0;
