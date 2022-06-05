@@ -8,7 +8,7 @@
 #include "utils.h"
 #define bufferLength		32768
 #define headerLength		4096
-#define StartMsg			"v0.0.2 build 8\n"
+#define StartMsg			"v0.0.2 build 9\n"
 #define codePageInfo 		"Задана кодовая таблица приложения OEM CP-866\n"
 char fileBuffer[256];
 char fileName[128];
@@ -219,7 +219,7 @@ int main(int argc, char* argv[])
 	arrcop(metadataBckSzDec,31,fileMeta,12);
 	memset(valBuffer,0x00,sizeof(valBuffer));
 	intmas(0xFF,2,valBuffer);
-	arrcop(valBuffer,42,fileMeta,2);
+	arrcop(valBuffer,43,fileMeta,2);
 	memset(bufferMas,0x00,sizeof(bufferMas));
 	arrcop(fileInfo,0,fileBuffer,0xFF);
 	for(uint8_t i=0;i<0xFF;++i){
@@ -235,10 +235,10 @@ int main(int argc, char* argv[])
 		if(pRange<=0x4D){fileBuffer[pRange]=fileInfo[i];}
 		if(pRange>0x4D){fileBuffer[pRange]=fileMeta[transferIndex];
 			transferIndex++;}
-		if(pRange==0x79){break;}++pRange;}
+		if(pRange==0x7A){break;}++pRange;}
 	transferIndex=0;
 	pRange=0;
-	for(uint8_t i=0;i<=0x79;++i){
+	for(uint8_t i=0;i<=0x7A;++i){
 		createInputArr(binArr, sizeof(binArr), fileBuffer[i]);
 		pRange=createDataPacket(binArr, outArr, i,aLvl.signalLevel);
 		summaryPacketLength=summaryPacketLength+pRange;
