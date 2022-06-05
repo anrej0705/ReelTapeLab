@@ -127,3 +127,29 @@ uint32_t strarcmp(char *Arr1, uint32_t startIndex, char *Arr2, uint32_t length){
 	while(startIndex<li){if(Arr1[startIndex]==Arr2[ri]){compareStatus=1;}
 		else{return 0;}ri++;
 		startIndex++;}return startIndex;}
+uint64_t masint(uint8_t *srcStr, uint32_t strIndex, uint8_t wordRange){
+	uint64_t retVal;
+	switch(wordRange){
+		case 0x01:{
+			retVal=srcStr[0];
+			break;}
+		case 0x02:{
+			retVal=srcStr[1];
+			retVal=retVal|srcStr[0]<<8;
+			break;}
+		case 0x04:{
+			retVal=srcStr[3];
+			retVal=retVal|srcStr[2]<<8;
+			retVal=retVal|srcStr[1]<<16;
+			retVal=retVal|srcStr[0]<<24;
+			break;}
+		/*case 0x08:{
+			retVal=srcStr[7];
+			retVal=retVal|srcStr[6]<<8;
+			retVal=retVal|srcStr[5]<<16;
+			retVal=retVal|srcStr[4]<<24;
+			retVal=retVal|srcStr[3]<<32;
+			retVal=retVal|srcStr[2]<<40;
+			retVal=retVal|srcStr[1]<<48;
+			retVal=retVal|srcStr[0]<<56;
+			break;}*/}return retVal;}
