@@ -8,7 +8,7 @@
 #include "utils.h"
 #define bufferLength		32768
 #define headerLength		4096
-#define StartMsg			"v0.0.2 build 9\n"
+#define StartMsg			"v0.0.2 build 10\n"
 #define codePageInfo 		"Задана кодовая таблица приложения OEM CP-866\n"
 char fileBuffer[256];
 char fileName[128];
@@ -214,7 +214,7 @@ int main(int argc, char* argv[])
 	arrcop(valBuffer,329,fileInfo,332);
 	arrcop(metadataTag,0,fileMeta,15);
 	arrcop(metadataBlckCont,15,fileMeta,12);
-	intmas(iterations+1,4,valBuffer);
+	intmas(numberOfIterations+1,4,valBuffer);
 	arrcop(valBuffer,27,fileMeta,4);
 	arrcop(metadataBckSzDec,31,fileMeta,12);
 	memset(valBuffer,0x00,sizeof(valBuffer));
