@@ -8,7 +8,8 @@
 #include "utils.h"
 #define bufferLength		32768
 #define headerLength		4096
-#define StartMsg			"v0.0.2 build 10\n"
+#define fileBlockSize		255
+#define StartMsg			"v0.0.2 build 11\n"
 #define codePageInfo 		"Задана кодовая таблица приложения OEM CP-866\n"
 char fileBuffer[256];
 char fileName[128];
@@ -27,6 +28,7 @@ char filepropFileCrcs[12]="FP>CHECKSUM>";
 char metadataFileEnds[12]="FM>ENDOFFIL>";
 char metadataBlckCont[12]="MT>BLCKCONT>";
 char metadataBckSzDec[12]="MT>BCKSZDEC>";
+char metadataBlckLstS[12]="MT>BCKLSTSZ>";
 char binfdataBckSzEnc[8]="BI>BSCN>";
 char binfdataBlckCr16[8]="BI>CR16>";
 char binfdataBlckCr32[8]="BI>CR32>";
@@ -101,6 +103,7 @@ struct fileDetails{
 } fInf;
 struct fileBlockInfo{
 	uint16_t packetDSize;
+	uint16_t lastBlockSize;
 	uint32_t blocksCnt;
 } bInf;
 struct blockHead{
@@ -116,7 +119,7 @@ int main(int argc, char* argv[])
 	char temp3[56];
 	char temp4[56];
 	char fileInfo[333];
-	char fileMeta[45];
+	char fileMeta[59];
 	char blockInfo[24];
 	memset(fileMeta,0x00,sizeof(fileMeta));
 	memset(blockInfo,0x00,sizeof(blockInfo));
@@ -187,7 +190,7 @@ int main(int argc, char* argv[])
 	printf("Суммарное количество блоков размером %d байт на запись: %d\n",sizeof(fileBuffer),numberOfIterations);
 	lasstBufferMas=malloc(roundedVal);
 	if(lasstBufferMas!=NULL)
-	{printf("Задан размер буфера под остаток в %d байт\n",roundedVal);}
+	{printf("Задан размер буфера под остаток в %d байт\n",roundedVal+1);}
 	stopIteration=sizeof(fileBuffer);
 	fseek(FOut,0,SEEK_SET);
 	transferIndex=writeCalibrate(1,31,31,31);
@@ -217,9 +220,12 @@ int main(int argc, char* argv[])
 	intmas(numberOfIterations+1,4,valBuffer);
 	arrcop(valBuffer,27,fileMeta,4);
 	arrcop(metadataBckSzDec,31,fileMeta,12);
-	memset(valBuffer,0x00,sizeof(valBuffer));
-	intmas(0xFF,2,valBuffer);
+	intmas(fileBlockSize,2,valBuffer);
 	arrcop(valBuffer,43,fileMeta,2);
+	arrcop(metadataBlckLstS,45,fileMeta,12);
+	memset(valBuffer,0x00,sizeof(valBuffer));
+	intmas(roundedVal,2,valBuffer);
+	arrcop(valBuffer,57,fileMeta,2);
 	memset(bufferMas,0x00,sizeof(bufferMas));
 	arrcop(fileInfo,0,fileBuffer,0xFF);
 	for(uint8_t i=0;i<0xFF;++i){
@@ -231,14 +237,14 @@ int main(int argc, char* argv[])
 	transferIndex=0;
 	pRange=0;
 	memset(fileBuffer,0x00,sizeof(fileBuffer));
-	for(uint16_t i=0x00FF;i<378;++i){
+	for(uint16_t i=0x00FF;i<392;++i){
 		if(pRange<=0x4D){fileBuffer[pRange]=fileInfo[i];}
 		if(pRange>0x4D){fileBuffer[pRange]=fileMeta[transferIndex];
 			transferIndex++;}
-		if(pRange==0x7A){break;}++pRange;}
+		if(pRange==0x88){break;}++pRange;}
 	transferIndex=0;
 	pRange=0;
-	for(uint8_t i=0;i<=0x7A;++i){
+	for(uint8_t i=0;i<=0x88;++i){
 		createInputArr(binArr, sizeof(binArr), fileBuffer[i]);
 		pRange=createDataPacket(binArr, outArr, i,aLvl.signalLevel);
 		summaryPacketLength=summaryPacketLength+pRange;
