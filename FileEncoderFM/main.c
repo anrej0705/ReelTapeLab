@@ -268,9 +268,9 @@ int main(int argc, char* argv[])
 			transferIndex=appendArray(outArr, summaryPacketLength, transferIndex, bufferMas);
 			iterations++;}
 		arrcop(binfdataBckSzEnc,0,blockInfo,8);
-		intmas(transferIndex,4,valBuffer);
+		intmas(writeIterations,4,valBuffer);
 		arrcop(valBuffer,8,blockInfo,4);
-		intmas(transferIndex,4,valBuffer);
+		//intmas(transferIndex,4,valBuffer);
 		arrcop(binfdataBlckCr16,12,blockInfo,8);
 		intmas(bHed.blockCRC16,2,valBuffer);
 		arrcop(valBuffer,20,blockInfo,2);
