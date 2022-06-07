@@ -6,24 +6,53 @@
 #include <math.h>
 #include "utils.h"
 #define scanSignalCorrect	4
-#define bufferLength		160000
+#define bufferLength		131072
 #define skipsBeforeTrig		2
-#define StartMsg			"v0.0.2 build 2\n"
+#define StartMsg			"v0.0.3 build 3\n"
 #define codePageInfo 		"Задана кодовая таблица приложения OEM CP-866\n"
 FILE* FIn;
 FILE* FOut;
-char metadataTag[14]="FM>METADATA_MT";
-char metadataEnd[7]="FM>FILE";
-char metadataFileName[11]="MT>FILENAME";
-char metedataFileSize[11]="MT>FILESIZE";
-char metadataFileExtn[11]="MT>FILEEXTN";
-char metadataFileCrcs[11]="MT>CHECKSUM";
-char metadataFileEnds[11]="MT>ENDOFFIL";
-char metadataChnkSumr[11]="MT>CHNKSUMR";
-char metadataChnkIndx[11]="MT>CHNKINDX";
-char metadataChnkSize[11]="MT>CHNKSIZE";
+FILE* FTest;
+char fileTypeJPGcaps[3]="JPG";
+char fileTypeJPGnocp[3]="jpg";
+char fileTypeJPEGcaps[4]="JPEG";
+char fileTypeJPEGnocp[4]="jpeg";
+char fileTypeJPG[25]="Сжатное JPEG изображение\0";
+char fileTypePNGcaps[3]="PNG";
+char fileTypePNGnocp[3]="png";
+char fileTypePNG[34]="Сжатое без потерь PNG изображение\0";
+char metadataTag[15]="FM>METADATA_MT>";
+char fileprop[15]="FM>FILEPROP_FP>";
+char fileSign[4]="FIL>";
+char codeMethod[3]="FM>";
+char filepropFileName[12]="FP>FILENAME>";
+char filepropFileSize[12]="FP>FILESIZE>";
+char filepropFileExtn[12]="FP>FILEEXTN>";
+char filepropFileCrcs[12]="FP>CHECKSUM>";
+char metadataFileEnds[12]="FM>ENDOFFIL>";
+char metadataBlckCont[12]="MT>BLCKCONT>";
+char metadataBckSzDec[12]="MT>BCKSZDEC>";
+char metadataBlckLstS[12]="MT>BCKLSTSZ>";
+char binfdataBckSzEnc[8]="BI>BSCN>";
+char binfdataBlckCr16[8]="BI>CR16>";
+char binfdataBlckCr32[8]="BI>CR32>";
+char binfdataBlckBlck[8]="BI>BLCK>";
+char valBuffer[4];
+char extensionBuffer[8];
+char blockInfo[24];
 uint16_t chuksEnum[32];
+uint16_t hdrTagList[13]={0,5,8,23,35,281,297,309,317,333,348,364,378};
+uint8_t hdrSizeList[5]={1,247,4,8,4};
+uint8_t infoTagList[4]={0,8,12,20};
+uint8_t decodedFileName[255];
+bool headerReady=0;
+bool bodyReady=0;
+bool jpgExtn=0;
+bool jpegExtn=0;
+bool crcWide=0;
+uint8_t transferSteps=0;
 uint8_t decodeBuffer[256];
+uint8_t procBuf[768];
 uint8_t nullTerminator=0x46;
 uint8_t zeroAmplitude=0x80;
 uint8_t dataAmplitudeHi=0xFF;
@@ -35,46 +64,71 @@ uint8_t logElseTiming=2;
 uint8_t pulseDeviation=1;
 uint8_t pulseDeviationPlus=1;
 uint8_t pulseDeviationMinus=1;
-uint8_t tSP;		//Длина импульса-детектора пакета
-uint8_t tTR;		//Длина импульса лог.1
-uint8_t tFL;		//Длина импульса лог.0
-uint8_t tSB;		//Длина паузы между отправкой битов
-uint8_t tSPlow;
-uint8_t tSPhigh;
-uint8_t tSPavg;
-uint8_t tTRlow;
-uint8_t tTRhigh;
-uint8_t tTRavg;
-uint8_t tFLlow;
-uint8_t tFLhigh;
-uint8_t tFLavg;
-uint8_t tSBlow;
-uint8_t tSBhigh;
-uint8_t tSBavg;
 uint8_t chunksSum;
 uint8_t resultByte=0x00;
+uint16_t transferPos[3]={0,256,512};
 uint16_t carrierFreq=12000;
 uint16_t wavSampleRate=48000;
+uint16_t decFileCRC16=0;
+uint16_t decFileDecSz=0;
+uint16_t decFileDecLtSz=0;
+uint32_t decBlockNumber=0;
+uint32_t decFileSize=0;
+uint32_t decFileCRC32=0;
+uint32_t decFileBlks=0;
 uint8_t *inputBuffer;
 uint8_t *lasstBufferMas;
 uint32_t packetConverter(uint8_t *sourceArray, uint32_t arrPos, uint32_t bufferSize);
 uint32_t measurePulse(uint8_t *samplesArr);
+void proceedHeader(char *inputArr);
+struct computedTimings{
+	uint8_t tSPlow;
+	uint8_t tSPhigh;
+	uint8_t tSPavg;
+	uint8_t tTRlow;
+	uint8_t tTRhigh;
+	uint8_t tTRavg;
+	uint8_t tFLlow;
+	uint8_t tFLhigh;
+	uint8_t tFLavg;
+	uint8_t tSBlow;
+	uint8_t tSBhigh;
+	uint8_t tSBavg;
+	uint8_t tSPDiffMinus;
+	uint8_t tSPDiffPlus;
+	uint8_t tTRDiffMinus;
+	uint8_t tTRDiffPlus;
+	uint8_t tFLDiffMinus;
+	uint8_t tFLDiffPlus;
+	uint8_t tSBDiffMinus;
+	uint8_t tSBDiffPlus;
+} compTim;
 int main(int argc, char* argv[])
 {
 	unsigned int codePageNum;
 	float modOfDiv;
 	bool setOutCodePageStatus;
 	bool setInCodePageStatus;
+	bool saveAddr=0;
+	bool startLock=0;
+	bool endLock=1;
+	bool transferHeaderLock=1;
 	uint8_t decodeByte=0x00;
-	uint8_t decodeBufIndx=0;
 	uint8_t stopRead=0xFF;
 	uint8_t lastChunkSize=0;
+	uint8_t srchWrd=0;
+	uint8_t ihp=0;
+	uint16_t stopProc=0x01FF;
+	uint32_t decodeBufIndx=0;
 	uint32_t fileWriteIndex=0;
 	uint32_t bufferPos=0;
+	uint32_t cacheBufferPos=0;
 	uint32_t fileSize=0;
 	uint32_t roundedVal=0;
 	uint32_t numberOfIterations;
 	uint32_t fileIndex=0;
+	uint32_t fileOffset=0;
+	SetConsoleTitle("FM Decoder v0.0.3 build 3 by Anrej0705");
 	inputBuffer=malloc(bufferLength);
 	codePageNum = GetConsoleOutputCP();
 	printf("Current console output codepage: %d\n",codePageNum);
@@ -95,69 +149,24 @@ int main(int argc, char* argv[])
 	}
 	printf("WAV(дискретная FM модуляция)->Преобразователь форматов BIN \n");
 	printf(StartMsg);
-	printf("Ну чо пацаны, я слетел с шараги так что теперь прога быстрее будет писаться. \nВсем гулям ку остальным соболезную\n");
-	//FIn=fopen("test.wav","rb");
-	//if(!FIn&&argc<2)
-	//{
-	//	printf("Не найден файл %s, или не указаны аргументы\n",argv[1]);
-	//	exit(1);
-	//}
-	tSP=(wavSampleRate/carrierFreq)*pkgSeparatorTiming;
-	tTR=(wavSampleRate/carrierFreq)*logTrueTiming;
-	tFL=(wavSampleRate/carrierFreq)*logElseTiming;
-	tSB=(wavSampleRate/carrierFreq)*bitSeparatorTiming;
-	printf("Тайминг стоп-бита: %d\nТайминг лог.0: %d\nТайминг лог.1: %d\nТайминг паузы между отправкой битов: %d\n",tSP,tFL,tTR,tSB);
-	printf("f(дискр)=%d\nf(несущ)=%d\n",wavSampleRate,carrierFreq);
-	printf("Диапазон разброса длины импульсов %d tau\n",pulseDeviation*2);
-	//tSPlow=tSP-pulseDeviationMinus;
-	//tSPhigh=tSP+pulseDeviationPlus;
-	//tTRlow=tTR-pulseDeviationMinus;
-	//tTRhigh=tTR+pulseDeviationPlus;
-	//tFLlow=tFL-pulseDeviationMinus;
-	//tFLhigh=tFL+pulseDeviationPlus;
-	//tSBlow=tSB-pulseDeviationMinus;
-	//tSBhigh=tSB+pulseDeviationPlus;
-	//printf("Тайминг стоп-бита: %d...%d\nТайминг лог.0: %d...%d\nТайминг лог.1: %d...%d\nТайминг паузы: %d...%d\n",tSPlow,tSPhigh,tFLlow,tFLhigh,tTRlow,tTRhigh,tSBlow,tSBhigh);
 	FIn=fopen(argv[1],"rb");
 	if(!FIn)
 	{
 		printf("Не найден файл %s, или не указаны аргументы\n",argv[1]);
 		exit(1);
 	}
-	fseek(FIn,0,SEEK_END);
-	fileSize=ftell(FIn);
-	modOfDiv=fmod(fileSize, bufferLength);
-	printf("Остаточный пакет байтов(RAW): %f\n",modOfDiv);
-	roundedVal=round(modOfDiv);
-	printf("Остаточный пакет байтов: %d\n", roundedVal);
-	numberOfIterations=(fileSize-modOfDiv)/bufferLength;
-	if(roundedVal!=0)
-	{
-		numberOfIterations++;
-	}
-	printf("Суммарное количество блоков: %d\n",numberOfIterations);
-	lasstBufferMas=malloc(roundedVal);
-	
 	fseek(FIn,0,SEEK_SET);
 	fread(inputBuffer,1,bufferLength,FIn);
 	fileIndex=measurePulse(inputBuffer);
-	printf("Тайминг стоп-бита: %d...%d(среднее %d)(отклонение от среднего +%d-%d)\nТайминг лог.0: %d...%d(среднее %d)(отклонение от среднего +%d-%d)\nТайминг лог.1: %d...%d(среднее %d)(отклонение от среднего +%d-%d)\nТайминг паузы: %d...%d(среднее %d)(отклонение от среднего +%d-%d)\n",tSPlow,tSPhigh,tSPavg,pulseDeviationPlus,pulseDeviationMinus,tFLlow,tFLhigh,tFLavg,pulseDeviationPlus,pulseDeviationMinus,tTRlow,tTRhigh,tTRavg,pulseDeviationPlus,pulseDeviationMinus,tSBlow,tSBhigh,tSBavg,pulseDeviationPlus,pulseDeviationMinus);
+	printf("Тайминг стоп-бита: %d...%d(среднее %d)(отклонение от среднего +%d...-%d)\nТайминг лог.0: %d...%d(среднее %d)(отклонение от среднего +%d...-%d)\nТайминг лог.1: %d...%d(среднее %d)(отклонение от среднего +%d...-%d)\nТайминг паузы: %d...%d(среднее %d)(отклонение от среднего +%d...-%d)\n",compTim.tSPlow,compTim.tSPhigh,compTim.tSPavg,compTim.tSPDiffPlus,compTim.tSPDiffMinus,compTim.tFLlow,compTim.tFLhigh,compTim.tFLavg,compTim.tFLDiffPlus,compTim.tFLDiffMinus,compTim.tTRlow,compTim.tTRhigh,compTim.tTRavg,compTim.tTRDiffPlus,compTim.tTRDiffMinus,compTim.tSBlow,compTim.tSBhigh,compTim.tSBavg,compTim.tSBDiffPlus,compTim.tSBDiffMinus);
 	
-	FOut=fopen("test","wb");
+	fseek(FIn,fileIndex,SEEK_SET);
+	fread(inputBuffer,1,bufferLength,FIn);
+	
 	//fileIndex=fileIndex+43;
-	fseek(FOut,fileWriteIndex,SEEK_SET);
-	//for(uint16_t steps=0;steps<4;steps++)
-	for(uint16_t steps=0;steps<numberOfIterations;steps++)
+	for(uint8_t i=0;i<3;i++)
 	{
-		if(steps<numberOfIterations-1)
-		{
-			printf("Декодирование файла, проход %d, указатель чанка на входном потоке %d, указатель чанка на выходном потоке %d",steps,fileIndex,fileWriteIndex);
-		}
-		else
-		{
-			printf("Декодирование файла(остаток), проход %d, указатель чанка на входном потоке %d, указатель чанка на выходном потоке %d",steps,fileIndex,fileWriteIndex);
-			stopRead=lastChunkSize;
-		}
+		//printf("iteration %d\n",i);
 		memset(decodeBuffer,0x00,sizeof(decodeBuffer));
 		memset(inputBuffer,0x00,bufferLength);
 		fseek(FIn,fileIndex,SEEK_SET);
@@ -171,12 +180,220 @@ int main(int argc, char* argv[])
 				break;	
 			decodeBufIndx++;
 		}
-		printf(", размер кодированного пакета %d\n",bufferPos);
-		fwrite(decodeBuffer,1,sizeof(decodeBuffer),FOut);
+		arrcop(decodeBuffer, transferPos[transferSteps], procBuf, sizeof(decodeBuffer));
+		transferSteps++;
+		if((i%2==1)&&(headerReady==0))
+		{
+			proceedHeader(procBuf);
+			headerReady=1;
+		}
 		decodeBufIndx=0;
+		if((bodyReady==0)&&(i==0))
+		{
+			bodyReady=1;
+			//dataStack(1,bufferPos);
+			//printf("trig\n");
+		}
 		fileIndex=fileIndex+bufferPos-1;
 		fileWriteIndex=fileWriteIndex+sizeof(decodeBuffer);
+		//printf("done\n");
 	}
+	transferSteps=0;
+	numberOfIterations=decFileBlks;
+	printf("Суммарное количество блоков: %d\n",numberOfIterations);
+	FOut=fopen(decodedFileName,"wb");
+	fseek(FOut,0,SEEK_SET);
+	
+	fileIndex=0;
+	bufferPos=0;
+	fseek(FIn,0,SEEK_SET);
+	
+	for(uint16_t steps=0;steps<numberOfIterations;steps++)
+	{
+		bufferPos=0;
+		fseek(FIn,fileIndex,SEEK_SET);
+		fread(inputBuffer,1,bufferLength,FIn);
+		while(1)
+		{
+			if(startLock==0)
+			{
+				cacheBufferPos=bufferPos;
+			}
+			bufferPos=packetConverter(inputBuffer, bufferPos, bufferLength);
+			procBuf[decodeBufIndx]=resultByte;
+			if(procBuf[decodeBufIndx]==binfdataBckSzEnc[srchWrd])
+			{
+				srchWrd++;
+				if(startLock==0)
+				{
+					startLock=1;
+				}
+				if(srchWrd==sizeof(binfdataBckSzEnc)-1)
+				{
+					break;
+				}
+			}
+			else
+			{
+				dataStack(0,0);
+				startLock=0;
+				srchWrd=0;
+			}
+			if(decodeBufIndx==768)
+			{
+				break;
+			}
+			decodeBufIndx++;
+		}
+		decodeBufIndx=0;
+		//printf("Начало заголовка %d\n",cacheBufferPos);
+		bufferPos=cacheBufferPos;
+		for(uint8_t i=0;i<sizeof(blockInfo);i++)
+		{
+			bufferPos=packetConverter(inputBuffer, bufferPos, bufferLength);
+			blockInfo[i]=resultByte;
+		}
+		if((ihp=strarcmp(blockInfo,infoTagList[0],binfdataBckSzEnc,sizeof(binfdataBckSzEnc)))!=0)
+		{/*printf("BSCN тег найден и он на месте\n");*/}
+		for(uint8_t i=0;i<sizeof(valBuffer);i++){valBuffer[i]=blockInfo[ihp];ihp++;}
+		decBlockNumber=masint(valBuffer,0,4);
+		//printf("Номер блока: %d\n",decBlockNumber);
+		memset(valBuffer,0x00,sizeof(valBuffer));
+		if((ihp=strarcmp(blockInfo,infoTagList[2],binfdataBlckCr16,sizeof(binfdataBlckCr16)))!=0)
+		{/*printf("CR16 тег найден и он на месте\n");*/}
+		for(uint8_t i=0;i<sizeof(valBuffer);i++){valBuffer[i]=blockInfo[ihp];ihp++;}
+		decFileCRC16=masint(valBuffer,0,2);
+		//printf("Контрольная сумма CRC-16 блока: 0x%04X\n",decFileCRC16);
+		memset(valBuffer,0x00,sizeof(valBuffer));
+		printf("Декодирование... проход %d, исходный чанк %d(размер чанка %d), конечный чанк %d, CRC-16: 0x%04X\n",steps+1,fileIndex,bufferPos,fileWriteIndex,decFileCRC16);
+		if(steps==numberOfIterations-1)
+		{
+			printf("Запись остатка размером %d байт... ",decFileDecLtSz+1);
+			stopRead=decFileDecLtSz;
+			
+		}
+		while(1)
+		{
+			bufferPos=packetConverter(inputBuffer, bufferPos, bufferLength);
+			decodeBuffer[decodeBufIndx]=resultByte;
+			if(decodeBufIndx==stopRead-2)
+			{
+				cacheBufferPos=bufferPos;
+			}
+			if(decodeBufIndx==stopRead)
+			{
+				break;
+			}
+			decodeBufIndx++;
+		}
+		//printf("\n");
+		bufferPos=cacheBufferPos;
+		//printf("Обратный поиск спада импульса...");
+		for(uint8_t i=0;i<32;i++)
+		{
+			if(inputBuffer[bufferPos-i]==0)
+			{
+				//printf(" найдено -> %d\n",bufferPos-i);
+				bufferPos=bufferPos-i;
+				break;
+			}
+		}
+		fileIndex=fileIndex+bufferPos-1;
+		if(steps==numberOfIterations-1)
+		{
+			stopRead=decFileDecLtSz;
+			fwrite(decodeBuffer,1,decFileDecLtSz,FOut);
+			break;
+		}
+		fwrite(decodeBuffer,1,sizeof(decodeBuffer),FOut);
+		memset(procBuf,0x00,sizeof(procBuf));
+		fileWriteIndex=fileWriteIndex+sizeof(decodeBuffer);
+	}
+	printf("Готово!\n");
+	fclose(FIn);
+	fclose(FOut);
+}
+void proceedHeader(char *inputArr)
+{
+	uint16_t hp=0;
+	memset(decodedFileName,0x00,sizeof(decodedFileName));
+	if((hp=strarcmp(inputArr,hdrTagList[0],fileSign,sizeof(fileSign)))!=0)
+	{printf("FILE тег найден и он на месте\n");}
+	printf("Версия таблицы %d\n",procBuf[hp]);
+	if((hp=strarcmp(inputArr,hdrTagList[1],codeMethod,sizeof(codeMethod)))!=0)
+	{printf("Метод кодирования: FM\n");}
+	if((hp=strarcmp(inputArr,hdrTagList[2],fileprop,sizeof(fileprop)))!=0)
+	{printf("FILEPROP тег найден и он на месте\n");}
+	if((hp=strarcmp(inputArr,hdrTagList[3],filepropFileName,sizeof(filepropFileName)))!=0)
+	{printf("FILENAME тег найден и он на месте\n");}
+	dataStack(1,hp);
+	hp=0;
+	while(inputArr[hp+hdrTagList[4]]!=0x00){decodedFileName[hp]=inputArr[hp+hdrTagList[4]];hp++;}
+	printf("Декодированное имя файла: %s\n",decodedFileName);
+	hp=dataStack(0,0);
+	if((hp=strarcmp(inputArr,hdrTagList[5],filepropFileSize,sizeof(filepropFileSize)))!=0)
+	{printf("FILESIZE тег найден и он на месте\n");}
+	for(uint8_t i=0;i<sizeof(valBuffer);i++){valBuffer[i]=inputArr[hp];hp++;}
+	decFileSize=masint(valBuffer,0,4);
+	printf("Расчетный размер декодируемого файла: %d байт\n",decFileSize);
+	memset(valBuffer,0x00,sizeof(valBuffer));
+	if((hp=strarcmp(inputArr,hdrTagList[6],filepropFileExtn,sizeof(filepropFileExtn)))!=0)
+	{printf("FILESIZE тег найден и он на месте\n");}
+	dataStack(1,hp);
+	hp=0;
+	printf("Тип файла: ");
+	while(inputArr[hp+hdrTagList[7]]!=0x00){extensionBuffer[hp]=inputArr[hp+hdrTagList[7]];hp++;}
+	if(hp==3||hp==4)
+	{
+		for(uint8_t i=0;i<hp;i++)
+		{
+			if((extensionBuffer[i]==fileTypeJPGcaps[i])||(extensionBuffer[i]==fileTypeJPGnocp[i]))
+			{
+				if((i==2)||(i==3))
+				{
+					printf("%s\n",fileTypeJPG);
+				}
+			}
+			else if((extensionBuffer[i]==fileTypePNGcaps[i])||(extensionBuffer[i]==fileTypePNGnocp[i]))
+			{
+				if(i==2)
+				{
+					printf("%s\n",fileTypePNG);
+				}
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+	if((hp=strarcmp(inputArr,hdrTagList[8],filepropFileCrcs,sizeof(filepropFileCrcs)))!=0)
+	{printf("CHECKSUM тег найден и он на месте\n");}
+	for(uint8_t i=0;i<sizeof(valBuffer);i++){valBuffer[i]=inputArr[hp];hp++;}
+	decFileCRC32=masint(valBuffer,0,4);
+	printf("Контрольная сумма CRC32: 0x%08X\n",decFileCRC32);
+	memset(valBuffer,0x00,sizeof(valBuffer));
+	if((hp=strarcmp(inputArr,hdrTagList[9],metadataTag,sizeof(metadataTag)))!=0)
+	{printf("METADATA_MT тег найден и он на месте\n");}
+	if((hp=strarcmp(inputArr,hdrTagList[10],metadataBlckCont,sizeof(metadataBlckCont)))!=0)
+	{printf("BLCKCONT тег найден и он на месте\n");}
+	for(uint8_t i=0;i<sizeof(valBuffer);i++){valBuffer[i]=inputArr[hp];hp++;}
+	decFileBlks=masint(valBuffer,0,4);
+	printf("Количество кодированных блоков: %d\n",decFileBlks);
+	memset(valBuffer,0x00,sizeof(valBuffer));
+	if((hp=strarcmp(inputArr,hdrTagList[11],metadataBckSzDec,sizeof(metadataBckSzDec)))!=0)
+	{printf("BCKSZDEC тег найден и он на месте\n");}
+	for(uint8_t i=0;i<2;i++){valBuffer[i]=inputArr[hp];hp++;}
+	decFileDecSz=masint(valBuffer,0,2);
+	printf("Размер декодированного блока: %d байт\n",decFileDecSz+1);
+	memset(valBuffer,0x00,sizeof(valBuffer));
+	if((hp=strarcmp(inputArr,hdrTagList[12],metadataBlckLstS,sizeof(metadataBlckLstS)))!=0)
+	{printf("BCKLSTSZ тег найден и он на месте\n");}
+	for(uint8_t i=0;i<2;i++){valBuffer[i]=inputArr[hp];hp++;}
+	decFileDecLtSz=masint(valBuffer,0,2);
+	printf("Размер остаточного: %d байт\n",decFileDecLtSz+1);
+	memset(valBuffer,0x00,sizeof(valBuffer));
+	
 }
 uint32_t measurePulse(uint8_t *samplesArr)
 {
@@ -272,7 +489,7 @@ uint32_t measurePulse(uint8_t *samplesArr)
 			if((samplesArr[i]>0xF0)&&(pauseTrig==1)&&(signalTrig==0)){++_j;}
 			if((samplesArr[i]<0x0F)&&(pauseTrig==0)&&(signalTrig==1)){++_j;}}_k=_k-_ovct;
 		for(uint8_t i=0;i<pulseCnt;i++){divl=divl+wideTable[i];}
-		divl=divl/pulseCnt;tSPavg=round(divl);}
+		divl=divl/pulseCnt;compTim.tSPavg=round(divl);}
 	memset(wideTable,0x00,sizeof(wideTable));
 	for(uint32_t i=_k;_k>0;--_k){if(samplesArr[_k]>0xF0){_k=i;--_k;break;}}
 	divl=0;pauseTrig=0;signalTrig=1;pulseCnt=0;trigPause=0;
@@ -325,7 +542,7 @@ uint32_t measurePulse(uint8_t *samplesArr)
 			if((samplesArr[i]<0x0F)&&(pauseTrig==0)&&(signalTrig==1)){++_j;}
 			if((samplesArr[i]>0xF0)&&(pauseTrig==1)&&(signalTrig==0)){++_j;}}_k=_k-_ovct-_p;
 		for(uint8_t i=0;i<pulseCnt;i++){divl=divl+wideTable[i];}
-		divl=divl/pulseCnt;tTRavg=round(divl);}
+		divl=divl/pulseCnt;compTim.tTRavg=round(divl);}
 	memset(wideTable,0x00,sizeof(wideTable));
 	memset(wideTable,0x00,sizeof(wideTable));
 	for(uint32_t i=_k;_k>0;--_k){if(samplesArr[_k]>0xF0){_k=i;++_k;break;}}
@@ -378,13 +595,13 @@ uint32_t measurePulse(uint8_t *samplesArr)
 			if((samplesArr[i]<0x0F)&&(pauseTrig==0)&&(signalTrig==1)){++_j;}
 			if((samplesArr[i]>0xF0)&&(pauseTrig==1)&&(signalTrig==0)){++_j;}}_k=_k-_ovct-_p;
 		for(uint8_t i=0;i<pulseCnt;i++){divl=divl+wideTable[i];}divl=divl/pulseCnt;
-		tFLavg=round(divl);}memset(wideTable,0x00,sizeof(wideTable));
+		compTim.tFLavg=round(divl);}memset(wideTable,0x00,sizeof(wideTable));
 	pauseTrig=0;signalTrig=1;pulseCnt=0;
 	for(uint8_t i=0;i<pauseCnt;i++){divl=divl+pauseTable[i];
 		if(pMin>=pauseTable[i]){pMin=pauseTable[i];}
 		else if(pMax<=pauseTable[i]){pMax=pauseTable[i];}}
 	divl=divl/pauseCnt;
-	tSBavg=round(divl);
+	compTim.tSBavg=round(divl);
 	_k=_k+_p;
 	--dMin;
 	++dMax;
@@ -394,14 +611,22 @@ uint32_t measurePulse(uint8_t *samplesArr)
 	++fMax;
 	--pMin;
 	++pMax;
-	tTRlow=tMin;
-	tTRhigh=tMax;
-	tFLlow=fMin;
-	tFLhigh=fMax;
-	tSPlow=dMin;
-	tSPhigh=dMax+2;
-	tSBlow=pMin;
-	tSBhigh=pMax;
+	compTim.tTRlow=tMin;
+	compTim.tTRhigh=tMax;
+	compTim.tFLlow=fMin;
+	compTim.tFLhigh=fMax;
+	compTim.tSPlow=dMin;
+	compTim.tSPhigh=dMax+2;
+	compTim.tSBlow=pMin;
+	compTim.tSBhigh=pMax;
+	compTim.tSPDiffMinus=compTim.tSPhigh-compTim.tSPavg;
+	compTim.tSPDiffPlus=compTim.tSPavg-compTim.tSPlow;
+	compTim.tTRDiffMinus=compTim.tTRhigh-compTim.tTRavg;
+	compTim.tTRDiffPlus=compTim.tTRavg-compTim.tTRlow;
+	compTim.tFLDiffMinus=compTim.tFLhigh-compTim.tFLavg;
+	compTim.tFLDiffPlus=compTim.tFLavg-compTim.tFLlow;
+	compTim.tSBDiffMinus=compTim.tSBhigh-compTim.tSBavg;
+	compTim.tSBDiffPlus=compTim.tSBavg-compTim.tSBlow;
 	printf("Размер калибровочного поля: %d\n",_k-44);
 	return _k;
 }
@@ -420,30 +645,30 @@ uint32_t packetConverter(uint8_t *sourceArray, uint32_t arrPos, uint32_t bufferS
 	uint8_t byteInvert=0;
 	memset(bitArr,0,sizeof(bitArr));
 	byteInvert=~dataAmplitudeHi;
-	for(uint32_t i=arrPos-pulseDeviation;i<arrPos+tSPhigh;i++){
-		if(sourceArray[i]==dataAmplitudeHi){if((byteCount>=tSPlow)&&(lowLimTrig!=1)){lowLimTrig=1;}}
+	for(uint32_t i=arrPos-pulseDeviation;i<arrPos+compTim.tSPhigh;i++){
+		if(sourceArray[i]==dataAmplitudeHi){if((byteCount>=compTim.tSPlow)&&(lowLimTrig!=1)){lowLimTrig=1;}}
 		else if((sourceArray[i]==byteInvert)&&(lowLimTrig==1)){
-			if((byteCount<=tSPhigh)&&(sourceArray[i]==byteInvert)&&(higLimTrig!=1)){byteCount--;higLimTrig=1;}}
+			if((byteCount<=compTim.tSPhigh)&&(sourceArray[i]==byteInvert)&&(higLimTrig!=1)){byteCount--;higLimTrig=1;}}
 		if((lowLimTrig&&higLimTrig)==1){arrPos=i+1;break;}byteCount++;}
 	lowLimTrig=0;higLimTrig=0;byteCount=0;
-	for(uint32_t i=arrPos-pulseDeviation;i<arrPos+tSBhigh;i++){
-		if(sourceArray[i]==byteInvert){if((byteCount>=tSBlow)&&(lowLimTrig!=1)){lowLimTrig=1;}}
+	for(uint32_t i=arrPos-pulseDeviation;i<arrPos+compTim.tSBhigh;i++){
+		if(sourceArray[i]==byteInvert){if((byteCount>=compTim.tSBlow)&&(lowLimTrig!=1)){lowLimTrig=1;}}
 		else if(sourceArray[i]==dataAmplitudeHi){
-			if((byteCount<=tSBhigh)&&(sourceArray[i]==dataAmplitudeHi)&&(higLimTrig!=1)){byteCount--;higLimTrig=1;}}
+			if((byteCount<=compTim.tSBhigh)&&(sourceArray[i]==dataAmplitudeHi)&&(higLimTrig!=1)){byteCount--;higLimTrig=1;}}
 		if((lowLimTrig&&higLimTrig)==1){arrPos=i;break;}byteCount++;}lowLimTrig=0;higLimTrig=0;byteCount=0;
-	while(bitProceed>-1){for(uint32_t i=arrPos-pulseDeviation;i<arrPos+tFLhigh+pulseDeviation;i++){
+	while(bitProceed>-1){for(uint32_t i=arrPos-pulseDeviation;i<arrPos+compTim.tFLhigh+pulseDeviation;i++){
 			if((sourceArray[i]==dataAmplitudeHi)&&(lowLimTrig!=1)){bitTrig++;lowLimTrig=1;}
 			else if((sourceArray[i]==byteInvert)&&(lowLimTrig==1)&&(higLimTrig==0)){higLimTrig=1;bitTrig--;}
 			if(bitTrig==1){pulseCounter++;}
 			if((higLimTrig==1)&&(lowLimTrig==1)){arrPos=i+1;break;}byteCount++;}
-		if((pulseCounter>tTRlow)&&(pulseCounter<tTRhigh)){bitArr[bitProceed]=1;}
-		if((pulseCounter>tFLlow)&&(pulseCounter<tFLhigh)){bitArr[bitProceed]=0;}
+		if((pulseCounter>compTim.tTRlow)&&(pulseCounter<compTim.tTRhigh)){bitArr[bitProceed]=1;}
+		if((pulseCounter>compTim.tFLlow)&&(pulseCounter<compTim.tFLhigh)){bitArr[bitProceed]=0;}
 		lowLimTrig=0;higLimTrig=0;byteCount=0;pulseCounter=0;bitProceed--;
-		for(uint32_t i=arrPos-pulseDeviation;i<arrPos+tSBhigh;i++){byteCount++;
+		for(uint32_t i=arrPos-pulseDeviation;i<arrPos+compTim.tSBhigh;i++){byteCount++;
 			if(sourceArray[i]==byteInvert){
-				if((byteCount>=tSBlow)&&(lowLimTrig!=1)){lowLimTrig=1;}}
+				if((byteCount>=compTim.tSBlow)&&(lowLimTrig!=1)){lowLimTrig=1;}}
 			else if(sourceArray[i]==dataAmplitudeHi){
-				if((byteCount<=tSBhigh)&&(sourceArray[i]==dataAmplitudeHi)&&(higLimTrig!=1)){byteCount--;
+				if((byteCount<=compTim.tSBhigh)&&(sourceArray[i]==dataAmplitudeHi)&&(higLimTrig!=1)){byteCount--;
 					higLimTrig=1;}}if((lowLimTrig&&higLimTrig)==1){arrPos=i+1;break;}}
 		lowLimTrig=0;higLimTrig=0;byteCount=0;}
 	if(resultByte!=0)
