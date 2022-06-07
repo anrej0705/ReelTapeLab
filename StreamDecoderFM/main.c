@@ -8,7 +8,7 @@
 #define scanSignalCorrect	4
 #define bufferLength		131072
 #define skipsBeforeTrig		2
-#define StartMsg			"v0.0.3 build 3\n"
+#define StartMsg			"v0.0.3 build 4\n"
 #define codePageInfo 		"Задана кодовая таблица приложения OEM CP-866\n"
 FILE* FIn;
 FILE* FOut;
@@ -210,6 +210,7 @@ int main(int argc, char* argv[])
 	
 	for(uint16_t steps=0;steps<numberOfIterations;steps++)
 	{
+		dataStack(1,bufferPos);
 		bufferPos=0;
 		fseek(FIn,fileIndex,SEEK_SET);
 		fread(inputBuffer,1,bufferLength,FIn);
@@ -235,7 +236,6 @@ int main(int argc, char* argv[])
 			}
 			else
 			{
-				dataStack(0,0);
 				startLock=0;
 				srchWrd=0;
 			}
@@ -265,7 +265,7 @@ int main(int argc, char* argv[])
 		decFileCRC16=masint(valBuffer,0,2);
 		//printf("Контрольная сумма CRC-16 блока: 0x%04X\n",decFileCRC16);
 		memset(valBuffer,0x00,sizeof(valBuffer));
-		printf("Декодирование... проход %d, исходный чанк %d(размер чанка %d), конечный чанк %d, CRC-16: 0x%04X\n",steps+1,fileIndex,bufferPos,fileWriteIndex,decFileCRC16);
+		printf("Декодирование... проход %d, исходный чанк %d(размер чанка %d), конечный чанк %d, CRC-16: 0x%04X\n",steps+1,fileIndex,dataStack(0,0),fileWriteIndex,decFileCRC16);
 		if(steps==numberOfIterations-1)
 		{
 			printf("Запись остатка размером %d байт... ",decFileDecLtSz+1);
