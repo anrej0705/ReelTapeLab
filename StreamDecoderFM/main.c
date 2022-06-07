@@ -8,11 +8,10 @@
 #define scanSignalCorrect	4
 #define bufferLength		131072
 #define skipsBeforeTrig		2
-#define StartMsg			"v0.0.3 build 4\n"
+#define StartMsg			"v0.0.3 build 5\n"
 #define codePageInfo 		"Задана кодовая таблица приложения OEM CP-866\n"
 FILE* FIn;
 FILE* FOut;
-FILE* FTest;
 char fileTypeJPGcaps[3]="JPG";
 char fileTypeJPGnocp[3]="jpg";
 char fileTypeJPEGcaps[4]="JPEG";
@@ -47,28 +46,14 @@ uint8_t infoTagList[4]={0,8,12,20};
 uint8_t decodedFileName[255];
 bool headerReady=0;
 bool bodyReady=0;
-bool jpgExtn=0;
-bool jpegExtn=0;
 bool crcWide=0;
 uint8_t transferSteps=0;
 uint8_t decodeBuffer[256];
 uint8_t procBuf[768];
-uint8_t nullTerminator=0x46;
-uint8_t zeroAmplitude=0x80;
-uint8_t dataAmplitudeHi=0xFF;
-uint8_t separatorAmpHi=0xFF;
-uint8_t bitSeparatorTiming=1;
-uint8_t pkgSeparatorTiming=4;
-uint8_t logTrueTiming=1;
-uint8_t logElseTiming=2;
+uint8_t dataAmplitudeHi=0x9F;
 uint8_t pulseDeviation=1;
-uint8_t pulseDeviationPlus=1;
-uint8_t pulseDeviationMinus=1;
-uint8_t chunksSum;
 uint8_t resultByte=0x00;
 uint16_t transferPos[3]={0,256,512};
-uint16_t carrierFreq=12000;
-uint16_t wavSampleRate=48000;
 uint16_t decFileCRC16=0;
 uint16_t decFileDecSz=0;
 uint16_t decFileDecLtSz=0;
@@ -128,7 +113,7 @@ int main(int argc, char* argv[])
 	uint32_t numberOfIterations;
 	uint32_t fileIndex=0;
 	uint32_t fileOffset=0;
-	SetConsoleTitle("FM Decoder v0.0.3 build 4 by Anrej0705");
+	SetConsoleTitle("FM Decoder v0.0.3 build 5 by Anrej0705");
 	inputBuffer=malloc(bufferLength);
 	codePageNum = GetConsoleOutputCP();
 	printf("Current console output codepage: %d\n",codePageNum);
@@ -426,174 +411,175 @@ uint32_t measurePulse(uint8_t *samplesArr)
 	uint8_t pauseCnt=0;
 	uint8_t trigKey=0;
 	uint8_t trigPause=0;
+	uint8_t invertSample=~dataAmplitudeHi;
 	bool pauseTrig=0;
 	bool signalTrig=1;
 	memset(wideTable,0x00,sizeof(wideTable));
 	memset(pauseTable,0x00,sizeof(pauseTable));
 	printf("Выполняю измерение длин импульсов...\n");
-	if(((mFlags&0x80)==0)&&(mFlags&0x40)==0){if(samplesArr[_k]>0xF0){
-			while(1){if(samplesArr[_k]>=0xF0){++_k;++_j;}else{break;}}
+	if(((mFlags&0x80)==0)&&(mFlags&0x40)==0){if(samplesArr[_k]>dataAmplitudeHi){
+			while(1){if(samplesArr[_k]>=dataAmplitudeHi){++_k;++_j;}else{break;}}
 			dMin=dMax=wideTable[pulseCnt]=_j;
 			++pulseCnt;dataStack(1,_k);
 			_i=_j;_j=0;pauseTrig=1;}
-		while(1){if(samplesArr[_k]<=0x0F){++_k;++_j;}else{break;}}
+		while(1){if(samplesArr[_k]<=invertSample){++_k;++_j;}else{break;}}
 		pMin=pMax=pauseTable[pauseCnt]=_j;++pauseCnt;_i=_j;_j=0;
-		if(pauseTrig==0){while(1){if(samplesArr[_k]>=0xF0){++_k;++_j;}else{break;}}
+		if(pauseTrig==0){while(1){if(samplesArr[_k]>=dataAmplitudeHi){++_k;++_j;}else{break;}}
 			dMin=dMax=wideTable[pulseCnt]=_j;
 			++pulseCnt;_i=_j;_j=0;}
 		else{_k=dataStack(0,0);}pauseTrig=0;
 		for(uint32_t i=_k;i<bufferLength;++i){
-			if((samplesArr[i]>0xF0)&&(_j>_p)&&(pauseTrig==0)&&(signalTrig==1)){
+			if((samplesArr[i]>dataAmplitudeHi)&&(_j>_p)&&(pauseTrig==0)&&(signalTrig==1)){
 				if(_j<pMin){pMin=_j;}else if(_j>pMax){pMax=_j;}
 				pauseTrig=1;signalTrig=0;
 				pauseTable[pauseCnt]=_j;
 				++pauseCnt;trigPause=0;
 				_p=_j;_j=0;}
-			else if((samplesArr[i]>0xF0)&&(_j<_p)&&(pauseTrig==0)&&(signalTrig==1)){
+			else if((samplesArr[i]>dataAmplitudeHi)&&(_j<_p)&&(pauseTrig==0)&&(signalTrig==1)){
 				if(_j<pMin){pMin=_j;}else if(_j>pMax){pMax=_j;}
 				pauseTrig=1;signalTrig=0;
 				pauseTable[pauseCnt]=_j;
 				++pauseCnt;trigPause=0;
 				_p=_j;_j=0;}
-			else if((samplesArr[i]>0xF0)&&(_j==_p)&&(pauseTrig==0)&&(signalTrig==1)){
+			else if((samplesArr[i]>dataAmplitudeHi)&&(_j==_p)&&(pauseTrig==0)&&(signalTrig==1)){
 				if(_j<pMin){pMin=_j;}else if(_j>pMax){pMax=_j;}
 				pauseTrig=1;signalTrig=0;
 				pauseTable[pauseCnt]=_j;
 				++pauseCnt;trigPause=0;
 				_p=_j;_j=0;}
-			if((samplesArr[i]<0x0F)&&(_j>dMin-(dMin/4))&&(_j>_i)&&(pauseTrig==1)&&(signalTrig==0)){
+			if((samplesArr[i]<invertSample)&&(_j>dMin-(dMin/4))&&(_j>_i)&&(pauseTrig==1)&&(signalTrig==0)){
 				if(_j<dMin){dMin=_j;}else if(_j>dMax){dMax=_j;}
 				pauseTrig=0;signalTrig=1;
 				wideTable[pulseCnt]=_j;
 				++pulseCnt;_i=_j;_j=0;}
-			else if((samplesArr[i]<0x0F)&&(_j>dMin-(dMin/4))&&(_j<_i)&&(pauseTrig==1)&&(signalTrig==0)){
+			else if((samplesArr[i]<invertSample)&&(_j>dMin-(dMin/4))&&(_j<_i)&&(pauseTrig==1)&&(signalTrig==0)){
 				if(_j<dMin){dMin=_j;}else if(_j>dMax){dMax=_j;}
 				pauseTrig=0;signalTrig=1;
 				wideTable[pulseCnt]=_j;
 				++pulseCnt;_i=_j;_j=0;}
-			else if((samplesArr[i]<0x0F)&&(_j>=dMin-(dMin/4))&&(_j==_i)&&(pauseTrig==1)&&(signalTrig==0)){
-				if(samplesArr[i]<0x0F)
+			else if((samplesArr[i]<invertSample)&&(_j>=dMin-(dMin/4))&&(_j==_i)&&(pauseTrig==1)&&(signalTrig==0)){
+				if(samplesArr[i]<invertSample)
 				pauseTrig=0;signalTrig=1;
 				wideTable[pulseCnt]=_j;
 				++pulseCnt;_i=_j;_j=0;}
-			if((samplesArr[i]>0xF0)&&(_j>dMax)&&(pauseTrig==1)&&(signalTrig==0)){trigPause++;}
+			if((samplesArr[i]>dataAmplitudeHi)&&(_j>dMax)&&(pauseTrig==1)&&(signalTrig==0)){trigPause++;}
 			else if(trigPause>2){
 				_k=i-_j-skipsBeforeTrig;_ovct=_j;
 				mFlags=mFlags|0xC0;break;}
-			if((samplesArr[i]>0xF0)&&(trigKey==0x00)){trigKey=0xFF;}
-			if((samplesArr[i]>0xF0)&&(trigKey==0xFF)){trigKey=0x00;}
+			if((samplesArr[i]>dataAmplitudeHi)&&(trigKey==0x00)){trigKey=0xFF;}
+			if((samplesArr[i]>dataAmplitudeHi)&&(trigKey==0xFF)){trigKey=0x00;}
 			else if((pauseTrig==1)&&(trigPause>skipsBeforeTrig)){
 				trigPause=0;_k=i;_ovct=_i-_p;
 				mFlags=mFlags|0xC0;break;}
 			else if(pauseTrig==1){trigPause++;}
-			if((samplesArr[i]>0xF0)&&(pauseTrig==1)&&(signalTrig==0)){++_j;}
-			if((samplesArr[i]<0x0F)&&(pauseTrig==0)&&(signalTrig==1)){++_j;}}_k=_k-_ovct;
+			if((samplesArr[i]>dataAmplitudeHi)&&(pauseTrig==1)&&(signalTrig==0)){++_j;}
+			if((samplesArr[i]<invertSample)&&(pauseTrig==0)&&(signalTrig==1)){++_j;}}_k=_k-_ovct;
 		for(uint8_t i=0;i<pulseCnt;i++){divl=divl+wideTable[i];}
 		divl=divl/pulseCnt;compTim.tSPavg=round(divl);}
 	memset(wideTable,0x00,sizeof(wideTable));
-	for(uint32_t i=_k;_k>0;--_k){if(samplesArr[_k]>0xF0){_k=i;--_k;break;}}
+	for(uint32_t i=_k;_k>0;--_k){if(samplesArr[_k]>dataAmplitudeHi){_k=i;--_k;break;}}
 	divl=0;pauseTrig=0;signalTrig=1;pulseCnt=0;trigPause=0;
 	if(((mFlags&0x20)==0)&&(mFlags&0x10)==0){_j=0;
-		while(1){if(samplesArr[_k]<=0x0F){++_k;++_j;}else{break;}}
+		while(1){if(samplesArr[_k]<=invertSample){++_k;++_j;}else{break;}}
 		pMin=pMax=pauseTable[pauseCnt]=_j;++pauseCnt;_i=_j;_j=0;
-		while(1){if(samplesArr[_k]>=0xF0){++_k;++_j;}else{break;}}
+		while(1){if(samplesArr[_k]>=dataAmplitudeHi){++_k;++_j;}else{break;}}
 		tMin=tMax=wideTable[pulseCnt]=_j;
 		--tMin;++tMax;++pulseCnt;_i=_j;_j=0;
 		for(uint16_t i=_k;i<bufferLength;++i){
-			if((samplesArr[i]>0xF0)&&(_j>_p)&&(pauseTrig==0)&&(signalTrig==1)){if(_j<pMin){pMin=_j;}else if(_j>pMax){pMax=_j;}
+			if((samplesArr[i]>dataAmplitudeHi)&&(_j>_p)&&(pauseTrig==0)&&(signalTrig==1)){if(_j<pMin){pMin=_j;}else if(_j>pMax){pMax=_j;}
 				pauseTrig=1;signalTrig=0;
 				pauseTable[pauseCnt]=_j;
 				++pauseCnt;trigPause=0;
 				_p=_j;_j=0;}
-			else if((samplesArr[i]>0xF0)&&(_j<_p)&&(pauseTrig==0)&&(signalTrig==1)){if(_j<pMin){pMin=_j;}else if(_j>pMax){pMax=_j;}
+			else if((samplesArr[i]>dataAmplitudeHi)&&(_j<_p)&&(pauseTrig==0)&&(signalTrig==1)){if(_j<pMin){pMin=_j;}else if(_j>pMax){pMax=_j;}
 				pauseTrig=1;signalTrig=0;
 				pauseTable[pauseCnt]=_j;
 				++pauseCnt;trigPause=0;
 				_p=_j;_j=0;}
-			else if((samplesArr[i]>0xF0)&&(_j==_p)&&(pauseTrig==0)&&(signalTrig==1)){pauseTrig=1;signalTrig=0;
+			else if((samplesArr[i]>dataAmplitudeHi)&&(_j==_p)&&(pauseTrig==0)&&(signalTrig==1)){pauseTrig=1;signalTrig=0;
 				pauseTable[pauseCnt]=_j;
 				++pauseCnt;trigPause=0;
 				_p=_j;_j=0;}
-			if((samplesArr[i]<0x0F)&&(_j>tMin-(tMin/4))&&(_j<tMax+(tMax/2))&&(_j>_i)&&(pauseTrig==1)&&(signalTrig==0)){
+			if((samplesArr[i]<invertSample)&&(_j>tMin-(tMin/4))&&(_j<tMax+(tMax/2))&&(_j>_i)&&(pauseTrig==1)&&(signalTrig==0)){
 				if(_j<tMin){tMin=_j;}else if(_j>tMax){tMax=_j;}
 				pauseTrig=0;signalTrig=1;
 				wideTable[pulseCnt]=_j;
 				++pulseCnt;_i=_j;_j=0;}
-			else if((samplesArr[i]<0x0F)&&(_j>tMin-(tMin/4))&&(_j<tMax+(tMax/2))&&(_j<_i)&&(pauseTrig==1)&&(signalTrig==0)){
+			else if((samplesArr[i]<invertSample)&&(_j>tMin-(tMin/4))&&(_j<tMax+(tMax/2))&&(_j<_i)&&(pauseTrig==1)&&(signalTrig==0)){
 				if(_j<tMin){tMin=_j;}else if(_j>tMax){tMax=_j;}
 				pauseTrig=0;signalTrig=1;
 				wideTable[pulseCnt]=_j;
 				++pulseCnt;_i=_j;_j=0;}
-			else if((samplesArr[i]<0x0F)&&(_j>tMin-(tMin/4))&&(_j<tMax+(tMax/2))&&(_j==_i)&&(pauseTrig==1)&&(signalTrig==0)){
-				if(samplesArr[i]<0x0F)
+			else if((samplesArr[i]<invertSample)&&(_j>tMin-(tMin/4))&&(_j<tMax+(tMax/2))&&(_j==_i)&&(pauseTrig==1)&&(signalTrig==0)){
+				if(samplesArr[i]<invertSample)
 				pauseTrig=0;signalTrig=1;
 				wideTable[pulseCnt]=_j;
 				++pulseCnt;_i=_j;_j=0;}
-			if((samplesArr[i]>0xF0)&&(_j>tMax)&&(pauseTrig==1)&&(signalTrig==0)){trigPause++;}
+			if((samplesArr[i]>dataAmplitudeHi)&&(_j>tMax)&&(pauseTrig==1)&&(signalTrig==0)){trigPause++;}
 			else if(trigPause>2){
 				_k=i;_ovct=_j+1;
 				mFlags=mFlags|0x30;break;}
-			if((samplesArr[i]>0xF0)&&(trigKey==0x00)){trigKey=0xFF;}
-			if((samplesArr[i]>0xF0)&&(trigKey==0xFF)){trigKey=0x00;}
+			if((samplesArr[i]>dataAmplitudeHi)&&(trigKey==0x00)){trigKey=0xFF;}
+			if((samplesArr[i]>dataAmplitudeHi)&&(trigKey==0xFF)){trigKey=0x00;}
 			else if((pauseTrig==1)&&(trigPause>skipsBeforeTrig)){
 				trigPause=0;_k=i;_ovct=_i-_p;
 				mFlags=mFlags|0x30;break;}
 			else if(pauseTrig==1){trigPause++;}
-			if((samplesArr[i]<0x0F)&&(pauseTrig==0)&&(signalTrig==1)){++_j;}
-			if((samplesArr[i]>0xF0)&&(pauseTrig==1)&&(signalTrig==0)){++_j;}}_k=_k-_ovct-_p;
+			if((samplesArr[i]<invertSample)&&(pauseTrig==0)&&(signalTrig==1)){++_j;}
+			if((samplesArr[i]>dataAmplitudeHi)&&(pauseTrig==1)&&(signalTrig==0)){++_j;}}_k=_k-_ovct-_p;
 		for(uint8_t i=0;i<pulseCnt;i++){divl=divl+wideTable[i];}
 		divl=divl/pulseCnt;compTim.tTRavg=round(divl);}
 	memset(wideTable,0x00,sizeof(wideTable));
 	memset(wideTable,0x00,sizeof(wideTable));
-	for(uint32_t i=_k;_k>0;--_k){if(samplesArr[_k]>0xF0){_k=i;++_k;break;}}
+	for(uint32_t i=_k;_k>0;--_k){if(samplesArr[_k]>dataAmplitudeHi){_k=i;++_k;break;}}
 	divl=0;pauseTrig=0;signalTrig=1;pulseCnt=0;trigPause=0;
 	if(((mFlags&0x08)==0)&&(mFlags&0x04)==0){_j=0;
-		while(1){if(samplesArr[_k]<=0x0F){++_k;++_j;}else{break;}}
+		while(1){if(samplesArr[_k]<=invertSample){++_k;++_j;}else{break;}}
 		pMin=pMax=pauseTable[pauseCnt]=_j;++pauseCnt;_i=_j;_j=0;
-		while(1){if(samplesArr[_k]>=0xF0){++_k;++_j;}else{break;}}
+		while(1){if(samplesArr[_k]>=dataAmplitudeHi){++_k;++_j;}else{break;}}
 		fMin=fMax=wideTable[pulseCnt]=_j;++pulseCnt;_i=_j;_j=0;
 		for(uint32_t i=_k;i<bufferLength;++i){
-			if((samplesArr[i]>0xF0)&&(_j>_p)&&(pauseTrig==0)&&(signalTrig==1)){if(_j<pMin){pMin=_j;}else if(_j>pMax){pMax=_j;}
+			if((samplesArr[i]>dataAmplitudeHi)&&(_j>_p)&&(pauseTrig==0)&&(signalTrig==1)){if(_j<pMin){pMin=_j;}else if(_j>pMax){pMax=_j;}
 				pauseTrig=1;signalTrig=0;
 				pauseTable[pauseCnt]=_j;
 				++pauseCnt;trigPause=0;
 				_p=_j;_j=0;}
-			else if((samplesArr[i]>0xF0)&&(_j<_p)&&(pauseTrig==0)&&(signalTrig==1)){if(_j<pMin){pMin=_j;}else if(_j>pMax){pMax=_j;}
+			else if((samplesArr[i]>dataAmplitudeHi)&&(_j<_p)&&(pauseTrig==0)&&(signalTrig==1)){if(_j<pMin){pMin=_j;}else if(_j>pMax){pMax=_j;}
 				pauseTrig=1;signalTrig=0;
 				pauseTable[pauseCnt]=_j;
 				++pauseCnt;trigPause=0;
 				_p=_j;_j=0;}
-			else if((samplesArr[i]>0xF0)&&(_j==_p)&&(pauseTrig==0)&&(signalTrig==1)){if(_j<pMin){pMin=_j;}else if(_j>pMax){pMax=_j;}
+			else if((samplesArr[i]>dataAmplitudeHi)&&(_j==_p)&&(pauseTrig==0)&&(signalTrig==1)){if(_j<pMin){pMin=_j;}else if(_j>pMax){pMax=_j;}
 				pauseTrig=1;signalTrig=0;
 				pauseTable[pauseCnt]=_j;
 				++pauseCnt;trigPause=0;
 				_p=_j;_j=0;}
-			if((samplesArr[i]<0x0F)&&(_j>fMin-(fMin/4))&&(_j<fMax+(fMax/2))&&(_j>_i)&&(pauseTrig==1)&&(signalTrig==0)){
+			if((samplesArr[i]<invertSample)&&(_j>fMin-(fMin/4))&&(_j<fMax+(fMax/2))&&(_j>_i)&&(pauseTrig==1)&&(signalTrig==0)){
 				if(_j<fMin){fMin=_j;}else if(_j>fMax){fMax=_j;}
 				pauseTrig=0;signalTrig=1;
 				wideTable[pulseCnt]=_j;
 				++pulseCnt;_i=_j;_j=0;}
-			else if((samplesArr[i]<0x0F)&&(_j>fMin-(fMin/4))&&(_j<fMax+(fMax/2))&&(_j<_i)&&(pauseTrig==1)&&(signalTrig==0)){
+			else if((samplesArr[i]<invertSample)&&(_j>fMin-(fMin/4))&&(_j<fMax+(fMax/2))&&(_j<_i)&&(pauseTrig==1)&&(signalTrig==0)){
 				if(_j<fMin){fMin=_j;}else if(_j>fMax){fMax=_j;}
 				pauseTrig=0;signalTrig=1;
 				wideTable[pulseCnt]=_j;
 				++pulseCnt;_i=_j;_j=0;}
-			else if((samplesArr[i]<0x0F)&&(_j>fMin-(fMin/4))&&(_j<fMax+(fMax/2))&&(_j==_i)&&(pauseTrig==1)&&(signalTrig==0)){
-				if(_j<fMin){fMin=_j;}else if(_j>fMax){fMax=_j;}if(samplesArr[i]<0x0F)
+			else if((samplesArr[i]<invertSample)&&(_j>fMin-(fMin/4))&&(_j<fMax+(fMax/2))&&(_j==_i)&&(pauseTrig==1)&&(signalTrig==0)){
+				if(_j<fMin){fMin=_j;}else if(_j>fMax){fMax=_j;}if(samplesArr[i]<invertSample)
 				pauseTrig=0;signalTrig=1;
 				wideTable[pulseCnt]=_j;
 				++pulseCnt;_i=_j;_j=0;}
-			if((samplesArr[i]>0xF0)&&(_j>fMax)&&(pauseTrig==1)&&(signalTrig==0)){trigPause++;}else if(trigPause>2){_k=i;_ovct=_j+1;
+			if((samplesArr[i]>dataAmplitudeHi)&&(_j>fMax)&&(pauseTrig==1)&&(signalTrig==0)){trigPause++;}else if(trigPause>2){_k=i;_ovct=_j+1;
 				mFlags=mFlags|0x30;break;}
-			if((samplesArr[i]>0xF0)&&(trigKey==0x00)){trigKey=0xFF;}
-			if((samplesArr[i]>0xF0)&&(trigKey==0xFF)){trigKey=0x00;}
+			if((samplesArr[i]>dataAmplitudeHi)&&(trigKey==0x00)){trigKey=0xFF;}
+			if((samplesArr[i]>dataAmplitudeHi)&&(trigKey==0xFF)){trigKey=0x00;}
 			else if((pauseTrig==1)&&(trigPause>skipsBeforeTrig)){trigPause=0;
 				_k=i;_ovct=_i-_p;
 				mFlags=mFlags|0x30;
 				break;}
 			else if(pauseTrig==1){trigPause++;}
-			if((samplesArr[i]<0x0F)&&(pauseTrig==0)&&(signalTrig==1)){++_j;}
-			if((samplesArr[i]>0xF0)&&(pauseTrig==1)&&(signalTrig==0)){++_j;}}_k=_k-_ovct-_p;
+			if((samplesArr[i]<invertSample)&&(pauseTrig==0)&&(signalTrig==1)){++_j;}
+			if((samplesArr[i]>dataAmplitudeHi)&&(pauseTrig==1)&&(signalTrig==0)){++_j;}}_k=_k-_ovct-_p;
 		for(uint8_t i=0;i<pulseCnt;i++){divl=divl+wideTable[i];}divl=divl/pulseCnt;
 		compTim.tFLavg=round(divl);}memset(wideTable,0x00,sizeof(wideTable));
 	pauseTrig=0;signalTrig=1;pulseCnt=0;
@@ -646,29 +632,29 @@ uint32_t packetConverter(uint8_t *sourceArray, uint32_t arrPos, uint32_t bufferS
 	memset(bitArr,0,sizeof(bitArr));
 	byteInvert=~dataAmplitudeHi;
 	for(uint32_t i=arrPos-pulseDeviation;i<arrPos+compTim.tSPhigh;i++){
-		if(sourceArray[i]==dataAmplitudeHi){if((byteCount>=compTim.tSPlow)&&(lowLimTrig!=1)){lowLimTrig=1;}}
-		else if((sourceArray[i]==byteInvert)&&(lowLimTrig==1)){
-			if((byteCount<=compTim.tSPhigh)&&(sourceArray[i]==byteInvert)&&(higLimTrig!=1)){byteCount--;higLimTrig=1;}}
+		if(sourceArray[i]>=dataAmplitudeHi){if((byteCount>=compTim.tSPlow)&&(lowLimTrig!=1)){lowLimTrig=1;}}
+		else if((sourceArray[i]<=byteInvert)&&(lowLimTrig==1)){
+			if((byteCount<=compTim.tSPhigh)&&(sourceArray[i]<=byteInvert)&&(higLimTrig!=1)){byteCount--;higLimTrig=1;}}
 		if((lowLimTrig&&higLimTrig)==1){arrPos=i+1;break;}byteCount++;}
 	lowLimTrig=0;higLimTrig=0;byteCount=0;
 	for(uint32_t i=arrPos-pulseDeviation;i<arrPos+compTim.tSBhigh;i++){
-		if(sourceArray[i]==byteInvert){if((byteCount>=compTim.tSBlow)&&(lowLimTrig!=1)){lowLimTrig=1;}}
-		else if(sourceArray[i]==dataAmplitudeHi){
-			if((byteCount<=compTim.tSBhigh)&&(sourceArray[i]==dataAmplitudeHi)&&(higLimTrig!=1)){byteCount--;higLimTrig=1;}}
+		if(sourceArray[i]<=byteInvert){if((byteCount>=compTim.tSBlow)&&(lowLimTrig!=1)){lowLimTrig=1;}}
+		else if(sourceArray[i]>=dataAmplitudeHi){
+			if((byteCount<=compTim.tSBhigh)&&(sourceArray[i]>=dataAmplitudeHi)&&(higLimTrig!=1)){byteCount--;higLimTrig=1;}}
 		if((lowLimTrig&&higLimTrig)==1){arrPos=i;break;}byteCount++;}lowLimTrig=0;higLimTrig=0;byteCount=0;
 	while(bitProceed>-1){for(uint32_t i=arrPos-pulseDeviation;i<arrPos+compTim.tFLhigh+pulseDeviation;i++){
-			if((sourceArray[i]==dataAmplitudeHi)&&(lowLimTrig!=1)){bitTrig++;lowLimTrig=1;}
-			else if((sourceArray[i]==byteInvert)&&(lowLimTrig==1)&&(higLimTrig==0)){higLimTrig=1;bitTrig--;}
+			if((sourceArray[i]>=dataAmplitudeHi)&&(lowLimTrig!=1)){bitTrig++;lowLimTrig=1;}
+			else if((sourceArray[i]<=byteInvert)&&(lowLimTrig==1)&&(higLimTrig==0)){higLimTrig=1;bitTrig--;}
 			if(bitTrig==1){pulseCounter++;}
 			if((higLimTrig==1)&&(lowLimTrig==1)){arrPos=i+1;break;}byteCount++;}
 		if((pulseCounter>compTim.tTRlow)&&(pulseCounter<compTim.tTRhigh)){bitArr[bitProceed]=1;}
 		if((pulseCounter>compTim.tFLlow)&&(pulseCounter<compTim.tFLhigh)){bitArr[bitProceed]=0;}
 		lowLimTrig=0;higLimTrig=0;byteCount=0;pulseCounter=0;bitProceed--;
 		for(uint32_t i=arrPos-pulseDeviation;i<arrPos+compTim.tSBhigh;i++){byteCount++;
-			if(sourceArray[i]==byteInvert){
+			if(sourceArray[i]<=byteInvert){
 				if((byteCount>=compTim.tSBlow)&&(lowLimTrig!=1)){lowLimTrig=1;}}
-			else if(sourceArray[i]==dataAmplitudeHi){
-				if((byteCount<=compTim.tSBhigh)&&(sourceArray[i]==dataAmplitudeHi)&&(higLimTrig!=1)){byteCount--;
+			else if(sourceArray[i]>=dataAmplitudeHi){
+				if((byteCount<=compTim.tSBhigh)&&(sourceArray[i]>=dataAmplitudeHi)&&(higLimTrig!=1)){byteCount--;
 					higLimTrig=1;}}if((lowLimTrig&&higLimTrig)==1){arrPos=i+1;break;}}
 		lowLimTrig=0;higLimTrig=0;byteCount=0;}
 	if(resultByte!=0)
