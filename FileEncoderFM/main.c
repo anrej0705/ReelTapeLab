@@ -9,7 +9,7 @@
 #define bufferLength		32768
 #define headerLength		4096
 #define fileBlockSize		255
-#define StartMsg			"v0.0.2 build 11\n"
+#define StartMsg			"v0.0.2 build 12\n"
 #define codePageInfo 		"Задана кодовая таблица приложения OEM CP-866\n"
 char fileBuffer[256];
 char fileName[128];
@@ -253,7 +253,7 @@ int main(int argc, char* argv[])
 	summaryPacketLength=0;
 	transferIndex=0;
 	pRange=0;
-	while(writeIterations<numberOfIterations+1){
+	while(writeIterations<numberOfIterations+2){
 		writeIterations++;
 		if(writeIterations>numberOfIterations){
 			printf("Запись остаточного блока №%d размером в %d байт\n",writeIterations,roundedVal);
