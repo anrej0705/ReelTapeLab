@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
 	uint32_t numberOfIterations;
 	uint32_t fileIndex=0;
 	uint32_t fileOffset=0;
-	SetConsoleTitle("FM Decoder v0.0.3 build 3 by Anrej0705");
+	SetConsoleTitle("FM Decoder v0.0.3 build 4 by Anrej0705");
 	inputBuffer=malloc(bufferLength);
 	codePageNum = GetConsoleOutputCP();
 	printf("Current console output codepage: %d\n",codePageNum);
