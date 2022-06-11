@@ -9,17 +9,17 @@
 #define bLengthVal			131072
 #define skipsBeforeTrig		2
 #define StartMsg			"v0.0.3 build 6\n"
-#define codePageInfo 		"Задана кодовая таблица приложения OEM CP-866\n"
+#define codePageInfo 		"тАб┬а┬д┬а┬н┬а ┬к┬о┬д┬о┬в┬а├п ├в┬а┬б┬л┬и├ж┬а ┬п├а┬и┬л┬о┬ж┬е┬н┬и├п OEM CP-866\n"
 FILE* FIn;
 FILE* FOut;
 static char fileTypeJPGcaps[3]="JPG";
 static char fileTypeJPGnocp[3]="jpg";
 static char fileTypeJPEGcaps[4]="JPEG";
 static char fileTypeJPEGnocp[4]="jpeg";
-static char fileTypeJPG[25]="Сжатное JPEG изображение\0";
+static char fileTypeJPG[25]="тАШ┬ж┬а├в┬н┬о┬е JPEG ┬и┬з┬о┬б├а┬а┬ж┬е┬н┬и┬е\0";
 static char fileTypePNGcaps[3]="PNG";
 static char fileTypePNGnocp[3]="png";
-static char fileTypePNG[34]="Сжатое без потерь PNG изображение\0";
+static char fileTypePNG[34]="тАШ┬ж┬а├в┬о┬е ┬б┬е┬з ┬п┬о├в┬е├а├м PNG ┬и┬з┬о┬б├а┬а┬ж┬е┬н┬и┬е\0";
 static char metadataTag[15]="FM>METADATA_MT>";
 static char fileprop[15]="FM>FILEPROP_FP>";
 static char fileSign[4]="FIL>";
@@ -134,20 +134,20 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		printf("Переключение кодовой страницы не требуется\n\n");
+		printf("┬П┬е├а┬е┬к┬л├о├з┬е┬н┬и┬е ┬к┬о┬д┬о┬в┬о┬й ├б├в├а┬а┬н┬и├ж├л ┬н┬е ├в├а┬е┬б├г┬е├в├б├п\n\n");
 	}
-	printf("Декодер FM->BIN ");
+	printf("тАЮ┬е┬к┬о┬д┬е├а FM->BIN ");
 	printf(StartMsg);
 	printf("by Anrej0705 github.com/anrej0705/ReelTapeLab\n\n");
 	HMODULE crclib = LoadLibrary("CRCLIB.DLL");
 	if(crclib==NULL)
 	{
-		printf("Невозможно открыть модуль CRCLIB.DLL\nКонтрольные суммы проверяться не будут!\n\n");
+		printf("┬Н┬е┬в┬о┬з┬м┬о┬ж┬н┬о ┬о├в┬к├а├л├в├м ┬м┬о┬д├г┬л├м CRCLIB.DLL\n┼а┬о┬н├в├а┬о┬л├м┬н├л┬е ├б├г┬м┬м├л ┬п├а┬о┬в┬е├а├п├в├м├б├п ┬н┬е ┬б├г┬д├г├в!\n\n");
 	}
 	else
 	{
 		function libver = (function)GetProcAddress(crclib,"libVer");
-		printf("CRCLIB.DLL найден и открыт\n");
+		printf("CRCLIB.DLL ┬н┬а┬й┬д┬е┬н ┬и ┬о├в┬к├а├л├в\n");
 		printf("livBer");
 		printf("\n\n");
 		crclibLoad=1;
@@ -155,13 +155,13 @@ int main(int argc, char* argv[])
 	FIn=fopen(argv[1],"rb");
 	if(!FIn)
 	{
-		printf("Не найден файл %s, или не указаны аргументы\n",argv[1]);
+		printf("┬Н┬е ┬н┬а┬й┬д┬е┬н ├д┬а┬й┬л %s, ┬и┬л┬и ┬н┬е ├г┬к┬а┬з┬а┬н├л ┬а├а┬г├г┬м┬е┬н├в├л\n",argv[1]);
 		exit(1);
 	}
 	fseek(FIn,0,SEEK_SET);
 	fread(inputBuffer,1,bufferLength,FIn);
 	fileIndex=measurePulse(inputBuffer);
-	printf("Тайминг стоп-бита: %d...%d(среднее %d)(отклонение от среднего +%d...-%d)\nТайминг лог.0: %d...%d(среднее %d)(отклонение от среднего +%d...-%d)\nТайминг лог.1: %d...%d(среднее %d)(отклонение от среднего +%d...-%d)\nТайминг паузы: %d...%d(среднее %d)(отклонение от среднего +%d...-%d)\n\n",compTim.tSPlow,compTim.tSPhigh,compTim.tSPavg,compTim.tSPDiffMinus,compTim.tSPDiffPlus,compTim.tFLlow,compTim.tFLhigh,compTim.tFLavg,compTim.tFLDiffMinus,compTim.tFLDiffPlus,compTim.tTRlow,compTim.tTRhigh,compTim.tTRavg,compTim.tTRDiffMinus,compTim.tTRDiffPlus,compTim.tSBlow,compTim.tSBhigh,compTim.tSBavg,compTim.tSBDiffMinus,compTim.tSBDiffPlus);
+	printf("тАЩ┬а┬й┬м┬и┬н┬г ├б├в┬о┬п-┬б┬и├в┬а: %d...%d(├б├а┬е┬д┬н┬е┬е %d)(┬о├в┬к┬л┬о┬н┬е┬н┬и┬е ┬о├в ├б├а┬е┬д┬н┬е┬г┬о +%d...-%d)\nтАЩ┬а┬й┬м┬и┬н┬г ┬л┬о┬г.0: %d...%d(├б├а┬е┬д┬н┬е┬е %d)(┬о├в┬к┬л┬о┬н┬е┬н┬и┬е ┬о├в ├б├а┬е┬д┬н┬е┬г┬о +%d...-%d)\nтАЩ┬а┬й┬м┬и┬н┬г ┬л┬о┬г.1: %d...%d(├б├а┬е┬д┬н┬е┬е %d)(┬о├в┬к┬л┬о┬н┬е┬н┬и┬е ┬о├в ├б├а┬е┬д┬н┬е┬г┬о +%d...-%d)\nтАЩ┬а┬й┬м┬и┬н┬г ┬п┬а├г┬з├л: %d...%d(├б├а┬е┬д┬н┬е┬е %d)(┬о├в┬к┬л┬о┬н┬е┬н┬и┬е ┬о├в ├б├а┬е┬д┬н┬е┬г┬о +%d...-%d)\n\n",compTim.tSPlow,compTim.tSPhigh,compTim.tSPavg,compTim.tSPDiffMinus,compTim.tSPDiffPlus,compTim.tFLlow,compTim.tFLhigh,compTim.tFLavg,compTim.tFLDiffMinus,compTim.tFLDiffPlus,compTim.tTRlow,compTim.tTRhigh,compTim.tTRavg,compTim.tTRDiffMinus,compTim.tTRDiffPlus,compTim.tSBlow,compTim.tSBhigh,compTim.tSBavg,compTim.tSBDiffMinus,compTim.tSBDiffPlus);
 	
 	fseek(FIn,fileIndex,SEEK_SET);
 	fread(inputBuffer,1,bufferLength,FIn);
@@ -176,7 +176,7 @@ int main(int argc, char* argv[])
 		readResult=fread(inputBuffer,1,bufferLength,FIn);
 		if(readResult!=bufferLength)
 		{
-			printf("Ошибка чтения файла в буфер\nreadResult=%d\n",readResult);
+			printf("┼╜├и┬и┬б┬к┬а ├з├в┬е┬н┬и├п ├д┬а┬й┬л┬а ┬в ┬б├г├д┬е├а\nreadResult=%d\n",readResult);
 			exit(0);
 		}
 		bufferPos=1;
@@ -208,7 +208,7 @@ int main(int argc, char* argv[])
 	}
 	transferSteps=0;
 	numberOfIterations=decFileBlks;
-	printf("Суммарное количество блоков: %d\n",numberOfIterations);
+	printf("тАШ├г┬м┬м┬а├а┬н┬о┬е ┬к┬о┬л┬и├з┬е├б├в┬в┬о ┬б┬л┬о┬к┬о┬в: %d\n",numberOfIterations);
 	FOut=fopen(decodedFileName,"wb");
 	fseek(FOut,0,SEEK_SET);
 	
@@ -218,29 +218,29 @@ int main(int argc, char* argv[])
 	//for(uint16_t steps=0;steps<227;steps++)
 	for(uint16_t steps=0;steps<numberOfIterations;steps++)
 	{
-		//printf("Занесение значения bufferPos в стек\n");
+		//printf("тАб┬а┬н┬е├б┬е┬н┬и┬е ┬з┬н┬а├з┬е┬н┬и├п bufferPos ┬в ├б├в┬е┬к\n");
 		dataStack(1,bufferPos);
-		//printf("Установка курсора в потоке FIn по адресу %d\n",fileIndex);
+		//printf("тАЬ├б├в┬а┬н┬о┬в┬к┬а ┬к├г├а├б┬о├а┬а ┬в ┬п┬о├в┬о┬к┬е FIn ┬п┬о ┬а┬д├а┬е├б├г %d\n",fileIndex);
 		fseek(FIn,fileIndex,SEEK_SET);
-		//printf("Чтение данных в буфер\n");
+		//printf("тАФ├в┬е┬н┬и┬е ┬д┬а┬н┬н├л├е ┬в ┬б├г├д┬е├а\n");
 		readResult=fread(inputBuffer,1,bufferLength,FIn);
-		//printf("readResult=%d проход=%d fileIndex=%d bufferPos=%d\n",readResult,steps,fileIndex,bufferPos);
-		//printf("Начало цикла декодирования считанного блока\n");
+		//printf("readResult=%d ┬п├а┬о├е┬о┬д=%d fileIndex=%d bufferPos=%d\n",readResult,steps,fileIndex,bufferPos);
+		//printf("┬Н┬а├з┬а┬л┬о ├ж┬и┬к┬л┬а ┬д┬е┬к┬о┬д┬и├а┬о┬в┬а┬н┬и├п ├б├з┬и├в┬а┬н┬н┬о┬г┬о ┬б┬л┬о┬к┬а\n");
 		bufferPos=0;
 		while(1)
 		{
-			//printf("Проверка флага startLock(%d)\n",startLock);
+			//printf("┬П├а┬о┬в┬е├а┬к┬а ├д┬л┬а┬г┬а startLock(%d)\n",startLock);
 			if(startLock==0)
 			{
 				cacheBufferPos=bufferPos;
 			}
-			//printf("Вызов функции декодера пакетов(указатель bufferPos=%d\n",bufferPos);
+			//printf("тАЪ├л┬з┬о┬в ├д├г┬н┬к├ж┬и┬и ┬д┬е┬к┬о┬д┬е├а┬а ┬п┬а┬к┬е├в┬о┬в(├г┬к┬а┬з┬а├в┬е┬л├м bufferPos=%d\n",bufferPos);
 			bufferPos=packetConverter(inputBuffer, bufferPos, bufferLength);
-			//printf("Запись декодированного байта 0x%02X в массив по адресу %d\n",resultByte,steps);
+			//printf("тАб┬а┬п┬и├б├м ┬д┬е┬к┬о┬д┬и├а┬о┬в┬а┬н┬н┬о┬г┬о ┬б┬а┬й├в┬а 0x%02X ┬в ┬м┬а├б├б┬и┬в ┬п┬о ┬а┬д├а┬е├б├г %d\n",resultByte,steps);
 			procBuf[decodeBufIndx]=resultByte;
 			if(bufferPos>bufferLength)
 			{
-				printf("Внимание! Выход за пределы массива(%d>%d)\n",bufferPos,bufferLength);
+				printf("тАЪ┬н┬и┬м┬а┬н┬и┬е! тАЪ├л├е┬о┬д ┬з┬а ┬п├а┬е┬д┬е┬л├л ┬м┬а├б├б┬и┬в┬а(%d>%d)\n",bufferPos,bufferLength);
 			}
 			if(procBuf[decodeBufIndx]==binfdataBckSzEnc[srchWrd])
 			{
@@ -266,7 +266,7 @@ int main(int argc, char* argv[])
 			decodeBufIndx++;
 		}
 		decodeBufIndx=0;
-		//printf("Начало заголовка %d\n",cacheBufferPos);
+		//printf("┬Н┬а├з┬а┬л┬о ┬з┬а┬г┬о┬л┬о┬в┬к┬а %d\n",cacheBufferPos);
 		bufferPos=cacheBufferPos;
 		for(uint8_t i=0;i<sizeof(blockInfo);i++)
 		{
@@ -274,21 +274,21 @@ int main(int argc, char* argv[])
 			blockInfo[i]=resultByte;
 		}
 		if((ihp=strarcmp(blockInfo,infoTagList[0],binfdataBckSzEnc,sizeof(binfdataBckSzEnc)))!=0)
-		{/*printf("BSCN тег найден и он на месте\n");*/}
+		{/*printf("BSCN ├в┬е┬г ┬н┬а┬й┬д┬е┬н ┬и ┬о┬н ┬н┬а ┬м┬е├б├в┬е\n");*/}
 		for(uint8_t i=0;i<sizeof(valBuffer);i++){valBuffer[i]=blockInfo[ihp];ihp++;}
 		decBlockNumber=masint(valBuffer,0,4);
-		//printf("Номер блока: %d\n",decBlockNumber);
+		//printf("┬Н┬о┬м┬е├а ┬б┬л┬о┬к┬а: %d\n",decBlockNumber);
 		memset(valBuffer,0x00,sizeof(valBuffer));
 		if((ihp=strarcmp(blockInfo,infoTagList[2],binfdataBlckCr16,sizeof(binfdataBlckCr16)))!=0)
-		{/*printf("CR16 тег найден и он на месте\n");*/}
+		{/*printf("CR16 ├в┬е┬г ┬н┬а┬й┬д┬е┬н ┬и ┬о┬н ┬н┬а ┬м┬е├б├в┬е\n");*/}
 		for(uint8_t i=0;i<sizeof(valBuffer);i++){valBuffer[i]=blockInfo[ihp];ihp++;}
 		decFileCRC16=masint(valBuffer,0,2);
-		//printf("Контрольная сумма CRC-16 блока: 0x%04X\n",decFileCRC16);
+		//printf("┼а┬о┬н├в├а┬о┬л├м┬н┬а├п ├б├г┬м┬м┬а CRC-16 ┬б┬л┬о┬к┬а: 0x%04X\n",decFileCRC16);
 		memset(valBuffer,0x00,sizeof(valBuffer));
-		//printf("Декодирование... проход %d, исходный чанк %d(размер чанка %d), конечный чанк %d, CRC-16: 0x%04X\n",steps+1,fileIndex,dataStack(0,0),fileWriteIndex,decFileCRC16);
+		//printf("тАЮ┬е┬к┬о┬д┬и├а┬о┬в┬а┬н┬и┬е... ┬п├а┬о├е┬о┬д %d, ┬и├б├е┬о┬д┬н├л┬й ├з┬а┬н┬к %d(├а┬а┬з┬м┬е├а ├з┬а┬н┬к┬а %d), ┬к┬о┬н┬е├з┬н├л┬й ├з┬а┬н┬к %d, CRC-16: 0x%04X\n",steps+1,fileIndex,dataStack(0,0),fileWriteIndex,decFileCRC16);
 		if(steps==numberOfIterations-1)
 		{
-			//printf("Запись остатка размером %d байт... ",decFileDecLtSz+1);
+			//printf("тАб┬а┬п┬и├б├м ┬о├б├в┬а├в┬к┬а ├а┬а┬з┬м┬е├а┬о┬м %d ┬б┬а┬й├в... ",decFileDecLtSz+1);
 			stopRead=decFileDecLtSz;
 			
 		}
@@ -310,12 +310,12 @@ int main(int argc, char* argv[])
 		decodeBufIndx=0;
 		//printf("\n");
 		bufferPos=cacheBufferPos;
-		//printf("Обратный поиск спада импульса...");
+		//printf("┼╜┬б├а┬а├в┬н├л┬й ┬п┬о┬и├б┬к ├б┬п┬а┬д┬а ┬и┬м┬п├г┬л├м├б┬а...");
 		for(uint8_t i=0;i<64;i++)
 		{
 			if(inputBuffer[bufferPos-i]<=0x60)
 			{
-				//printf(" найдено -> %d\n",bufferPos-i);
+				//printf(" ┬н┬а┬й┬д┬е┬н┬о -> %d\n",bufferPos-i);
 				bufferPos=bufferPos-i;
 				break;
 			}
@@ -329,13 +329,13 @@ int main(int argc, char* argv[])
 		}
 		if(readResult!=bufferLength)
 		{
-			printf("Ошибка чтения файла в буфер\nreadResult=%d\nfileIndex=%d\nВозможно повреждение файла! Проверь CRC32\nCRC32: 0x%08X\n",readResult,fileIndex,decFileCRC32);
+			printf("┼╜├и┬и┬б┬к┬а ├з├в┬е┬н┬и├п ├д┬а┬й┬л┬а ┬в ┬б├г├д┬е├а\nreadResult=%d\nfileIndex=%d\nтАЪ┬о┬з┬м┬о┬ж┬н┬о ┬п┬о┬в├а┬е┬ж┬д┬е┬н┬и┬е ├д┬а┬й┬л┬а! ┬П├а┬о┬в┬е├а├м CRC32\nCRC32: 0x%08X\n",readResult,fileIndex,decFileCRC32);
 		}
 		fwrite(decodeBuffer,1,sizeof(decodeBuffer),FOut);
 		memset(procBuf,0x00,sizeof(procBuf));
 		fileWriteIndex=fileWriteIndex+sizeof(decodeBuffer);
 	}
-	//printf("Готово!\n");
+	//printf("╞Т┬о├в┬о┬в┬о!\n");
 	fclose(FIn);
 	fclose(FOut);
 }
@@ -344,30 +344,30 @@ void proceedHeader(char *inputArr)
 	uint16_t hp=0;
 	memset(decodedFileName,0x00,sizeof(decodedFileName));
 	if((hp=strarcmp(inputArr,hdrTagList[0],fileSign,sizeof(fileSign)))!=0)
-	{/*printf("FILE тег найден и он на месте\n");*/}
-	printf("Версия таблицы %d\n",procBuf[hp]);
+	{/*printf("FILE ├в┬е┬г ┬н┬а┬й┬д┬е┬н ┬и ┬о┬н ┬н┬а ┬м┬е├б├в┬е\n");*/}
+	printf("тАЪ┬е├а├б┬и├п ├в┬а┬б┬л┬и├ж├л %d\n",procBuf[hp]);
 	if((hp=strarcmp(inputArr,hdrTagList[1],codeMethod,sizeof(codeMethod)))!=0)
-	{printf("Метод кодирования: FM\n");}
+	{printf("┼Т┬е├в┬о┬д ┬к┬о┬д┬и├а┬о┬в┬а┬н┬и├п: FM\n");}
 	if((hp=strarcmp(inputArr,hdrTagList[2],fileprop,sizeof(fileprop)))!=0)
-	{/*printf("FILEPROP тег найден и он на месте\n");*/}
+	{/*printf("FILEPROP ├в┬е┬г ┬н┬а┬й┬д┬е┬н ┬и ┬о┬н ┬н┬а ┬м┬е├б├в┬е\n");*/}
 	if((hp=strarcmp(inputArr,hdrTagList[3],filepropFileName,sizeof(filepropFileName)))!=0)
-	{/*printf("FILENAME тег найден и он на месте\n");*/}
+	{/*printf("FILENAME ├в┬е┬г ┬н┬а┬й┬д┬е┬н ┬и ┬о┬н ┬н┬а ┬м┬е├б├в┬е\n");*/}
 	dataStack(1,hp);
 	hp=0;
 	while(inputArr[hp+hdrTagList[4]]!=0x00){decodedFileName[hp]=inputArr[hp+hdrTagList[4]];hp++;}
-	printf("Декодированное имя файла: %s\n",decodedFileName);
+	printf("тАЮ┬е┬к┬о┬д┬и├а┬о┬в┬а┬н┬н┬о┬е ┬и┬м├п ├д┬а┬й┬л┬а: %s\n",decodedFileName);
 	hp=dataStack(0,0);
 	if((hp=strarcmp(inputArr,hdrTagList[5],filepropFileSize,sizeof(filepropFileSize)))!=0)
-	{/*printf("FILESIZE тег найден и он на месте\n");*/}
+	{/*printf("FILESIZE ├в┬е┬г ┬н┬а┬й┬д┬е┬н ┬и ┬о┬н ┬н┬а ┬м┬е├б├в┬е\n");*/}
 	for(uint8_t i=0;i<sizeof(valBuffer);i++){valBuffer[i]=inputArr[hp];hp++;}
 	decFileSize=masint(valBuffer,0,4);
-	printf("Расчетный размер декодируемого файла: %d байт\n",decFileSize);
+	printf("┬Р┬а├б├з┬е├в┬н├л┬й ├а┬а┬з┬м┬е├а ┬д┬е┬к┬о┬д┬и├а├г┬е┬м┬о┬г┬о ├д┬а┬й┬л┬а: %d ┬б┬а┬й├в\n",decFileSize);
 	memset(valBuffer,0x00,sizeof(valBuffer));
 	if((hp=strarcmp(inputArr,hdrTagList[6],filepropFileExtn,sizeof(filepropFileExtn)))!=0)
-	{/*printf("FILESIZE тег найден и он на месте\n");*/}
+	{/*printf("FILESIZE ├в┬е┬г ┬н┬а┬й┬д┬е┬н ┬и ┬о┬н ┬н┬а ┬м┬е├б├в┬е\n");*/}
 	dataStack(1,hp);
 	hp=0;
-	printf("Тип файла: ");
+	printf("тАЩ┬и┬п ├д┬а┬й┬л┬а: ");
 	while(inputArr[hp+hdrTagList[7]]!=0x00){extensionBuffer[hp]=inputArr[hp+hdrTagList[7]];hp++;}
 	if(hp==3||hp==4)
 	{
@@ -394,30 +394,30 @@ void proceedHeader(char *inputArr)
 		}
 	}
 	if((hp=strarcmp(inputArr,hdrTagList[8],filepropFileCrcs,sizeof(filepropFileCrcs)))!=0)
-	{/*printf("CHECKSUM тег найден и он на месте\n");*/}
+	{/*printf("CHECKSUM ├в┬е┬г ┬н┬а┬й┬д┬е┬н ┬и ┬о┬н ┬н┬а ┬м┬е├б├в┬е\n");*/}
 	for(uint8_t i=0;i<sizeof(valBuffer);i++){valBuffer[i]=inputArr[hp];hp++;}
 	decFileCRC32=masint(valBuffer,0,4);
-	printf("Контрольная сумма CRC32: 0x%08X\n",decFileCRC32);
+	printf("┼а┬о┬н├в├а┬о┬л├м┬н┬а├п ├б├г┬м┬м┬а CRC32: 0x%08X\n",decFileCRC32);
 	memset(valBuffer,0x00,sizeof(valBuffer));
 	if((hp=strarcmp(inputArr,hdrTagList[9],metadataTag,sizeof(metadataTag)))!=0)
-	{/*printf("METADATA_MT тег найден и он на месте\n");*/}
+	{/*printf("METADATA_MT ├в┬е┬г ┬н┬а┬й┬д┬е┬н ┬и ┬о┬н ┬н┬а ┬м┬е├б├в┬е\n");*/}
 	if((hp=strarcmp(inputArr,hdrTagList[10],metadataBlckCont,sizeof(metadataBlckCont)))!=0)
-	{/*printf("BLCKCONT тег найден и он на месте\n");*/}
+	{/*printf("BLCKCONT ├в┬е┬г ┬н┬а┬й┬д┬е┬н ┬и ┬о┬н ┬н┬а ┬м┬е├б├в┬е\n");*/}
 	for(uint8_t i=0;i<sizeof(valBuffer);i++){valBuffer[i]=inputArr[hp];hp++;}
 	decFileBlks=masint(valBuffer,0,4);
-	printf("Количество кодированных блоков: %d\n",decFileBlks);
+	printf("┼а┬о┬л┬и├з┬е├б├в┬в┬о ┬к┬о┬д┬и├а┬о┬в┬а┬н┬н├л├е ┬б┬л┬о┬к┬о┬в: %d\n",decFileBlks);
 	memset(valBuffer,0x00,sizeof(valBuffer));
 	if((hp=strarcmp(inputArr,hdrTagList[11],metadataBckSzDec,sizeof(metadataBckSzDec)))!=0)
-	{/*printf("BCKSZDEC тег найден и он на месте\n");*/}
+	{/*printf("BCKSZDEC ├в┬е┬г ┬н┬а┬й┬д┬е┬н ┬и ┬о┬н ┬н┬а ┬м┬е├б├в┬е\n");*/}
 	for(uint8_t i=0;i<2;i++){valBuffer[i]=inputArr[hp];hp++;}
 	decFileDecSz=masint(valBuffer,0,2);
-	printf("Заданный размер декодированного блока: %d байт\n",decFileDecSz+1);
+	printf("тАб┬а┬д┬а┬н┬н├л┬й ├а┬а┬з┬м┬е├а ┬д┬е┬к┬о┬д┬и├а┬о┬в┬а┬н┬н┬о┬г┬о ┬б┬л┬о┬к┬а: %d ┬б┬а┬й├в\n",decFileDecSz+1);
 	memset(valBuffer,0x00,sizeof(valBuffer));
 	if((hp=strarcmp(inputArr,hdrTagList[12],metadataBlckLstS,sizeof(metadataBlckLstS)))!=0)
-	{/*printf("BCKLSTSZ тег найден и он на месте\n");*/}
+	{/*printf("BCKLSTSZ ├в┬е┬г ┬н┬а┬й┬д┬е┬н ┬и ┬о┬н ┬н┬а ┬м┬е├б├в┬е\n");*/}
 	for(uint8_t i=0;i<2;i++){valBuffer[i]=inputArr[hp];hp++;}
 	decFileDecLtSz=masint(valBuffer,0,2);
-	printf("Размер остаточного блока: %d байт\n",decFileDecLtSz+1);
+	printf("┬Р┬а┬з┬м┬е├а ┬о├б├в┬а├в┬о├з┬н┬о┬г┬о ┬б┬л┬о┬к┬а: %d ┬б┬а┬й├в\n",decFileDecLtSz+1);
 	memset(valBuffer,0x00,sizeof(valBuffer));
 	
 }
@@ -458,20 +458,20 @@ uint32_t measurePulse(uint8_t *samplesArr)
 	bool signalTrig=1;
 	memset(wideTable,0x00,sizeof(wideTable));
 	memset(pauseTable,0x00,sizeof(pauseTable));
-	printf("Выполняю измерение длин импульсов, пороговый уровень: %d(0x%02X)\n",dataAmplitudeHi,dataAmplitudeHi);
+	printf("тАЪ├л┬п┬о┬л┬н├п├о ┬и┬з┬м┬е├а┬е┬н┬и┬е ┬д┬л┬и┬н ┬и┬м┬п├г┬л├м├б┬о┬в, ┬п┬о├а┬о┬г┬о┬в├л┬й ├г├а┬о┬в┬е┬н├м: %d(0x%02X)\n",dataAmplitudeHi,dataAmplitudeHi);
 	
 	for(uint16_t i=_k;i<16384;i++)
 	{
-		//printf("Поиск... фронта %d 0x%02X\n",i,samplesArr[i]);
+		//printf("┬П┬о┬и├б┬к... ├д├а┬о┬н├в┬а %d 0x%02X\n",i,samplesArr[i]);
 		if(samplesArr[i]>=dataAmplitudeHi)
 		{
 			_k=i;
-			printf("Смещение фронта сигнала от начала файла %d\n",_k);
+			printf("тАШ┬м┬е├й┬е┬н┬и┬е ├д├а┬о┬н├в┬а ├б┬и┬г┬н┬а┬л┬а ┬о├в ┬н┬а├з┬а┬л┬а ├д┬а┬й┬л┬а %d\n",_k);
 			break;
 		}
 	}
 	
-	if(((mFlags&0x80)==0)&&(mFlags&0x40)==0){if(samplesArr[_k]>dataAmplitudeHi)	//Выполняем измерение импульсов-детекторов. Также меряем паузу
+	if(((mFlags&0x80)==0)&&(mFlags&0x40)==0){if(samplesArr[_k]>dataAmplitudeHi)	//тАЪ├л┬п┬о┬л┬н├п┬е┬м ┬и┬з┬м┬е├а┬е┬н┬и┬е ┬и┬м┬п├г┬л├м├б┬о┬в-┬д┬е├в┬е┬к├в┬о├а┬о┬в. тАЩ┬а┬к┬ж┬е ┬м┬е├а├п┬е┬м ┬п┬а├г┬з├г
 	{
 			while(1)
 			{
@@ -704,7 +704,7 @@ uint32_t measurePulse(uint8_t *samplesArr)
 	signalTrig=1;
 	pulseCnt=0;
 	trigPause=0;
-	if(((mFlags&0x20)==0)&&(mFlags&0x10)==0)	//Измеряем импульсы лог.1. Паузу тоже смотрим
+	if(((mFlags&0x20)==0)&&(mFlags&0x10)==0)	//╦Ж┬з┬м┬е├а├п┬е┬м ┬и┬м┬п├г┬л├м├б├л ┬л┬о┬г.1. ┬П┬а├г┬з├г ├в┬о┬ж┬е ├б┬м┬о├в├а┬и┬м
 	{
 		_j=0;
 		while(1)
@@ -893,7 +893,7 @@ uint32_t measurePulse(uint8_t *samplesArr)
 	signalTrig=1;
 	pulseCnt=0;
 	trigPause=0;
-	if(((mFlags&0x08)==0)&&(mFlags&0x04)==0)	//Измеряем импульсы лог.0. Также меряем паузу
+	if(((mFlags&0x08)==0)&&(mFlags&0x04)==0)	//╦Ж┬з┬м┬е├а├п┬е┬м ┬и┬м┬п├г┬л├м├б├л ┬л┬о┬г.0. тАЩ┬а┬к┬ж┬е ┬м┬е├а├п┬е┬м ┬п┬а├г┬з├г
 	{
 		_j=0;
 		while(1)
@@ -1092,7 +1092,7 @@ uint32_t measurePulse(uint8_t *samplesArr)
 	divl=divl/pauseCnt;
 	compTim.tSBavg=round(divl);
 	_k=_k+_p;
-	--dMin;	//Костыль для более стабильной работы декодера
+	--dMin;	//┼а┬о├б├в├л┬л├м ┬д┬л├п ┬б┬о┬л┬е┬е ├б├в┬а┬б┬и┬л├м┬н┬о┬й ├а┬а┬б┬о├в├л ┬д┬е┬к┬о┬д┬е├а┬а
 	++dMax;
 	--fMin;
 	++fMax;
@@ -1117,13 +1117,13 @@ uint32_t measurePulse(uint8_t *samplesArr)
 	compTim.tSBDiffMinus=compTim.tSBhigh-compTim.tSBavg;
 	compTim.tSBDiffPlus=compTim.tSBavg-compTim.tSBlow;
 	newBufferLength=((fMax+pMax)*8+dMax)*sizeof(procBuf)+768;
-	printf("Размер буффера для чтения: %d Байт\n",newBufferLength);
-	printf("Размер калибровочного поля: %d\n",_k-44);
+	printf("┬Р┬а┬з┬м┬е├а ┬б├г├д├д┬е├а┬а ┬д┬л├п ├з├в┬е┬н┬и├п: %d ┬Б┬а┬й├в\n",newBufferLength);
+	printf("┬Р┬а┬з┬м┬е├а ┬к┬а┬л┬и┬б├а┬о┬в┬о├з┬н┬о┬г┬о ┬п┬о┬л├п: %d\n",_k-44);
 	bufferLength=newBufferLength;
 	inputBuffer=realloc(inputBuffer,newBufferLength);
 	if(inputBuffer==0)
 	{
-		printf("Ошибка настройки буфера(целевое значение=%d байт)\n",newBufferLength);
+		printf("┼╜├и┬и┬б┬к┬а ┬н┬а├б├в├а┬о┬й┬к┬и ┬б├г├д┬е├а┬а(├ж┬е┬л┬е┬в┬о┬е ┬з┬н┬а├з┬е┬н┬и┬е=%d ┬б┬а┬й├в)\n",newBufferLength);
 	}
 	return _k;
 }
