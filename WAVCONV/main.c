@@ -1,15 +1,15 @@
-#include<locale.h>																																//Библиотека локализацй, нужна для русского языка в консоли
-#include<stdbool.h>																																//Библиотека для работы с двоичными числам, C99
-#include<stdint.h>																																//Бибилотека для работы с нестандартными числами uint8_t, uint16_t, uint32_t
-#include<stdio.h>																																//Библиотека для работы с консолью, вывод в консоль и считывание с нее
-#include<conio.h>																																//Бибилотека
-#include<stdlib.h>																																//Бибилотека
-#include<string.h>																																//Библиотека
-#include<math.h>																																//Библиотека с математическими функциями
+#include<locale.h>																																//ГЃГЁГЎГ«ГЁГ®ГІГҐГЄГ  Г«Г®ГЄГ Г«ГЁГ§Г Г¶Г©, Г­ГіГ¦Г­Г  Г¤Г«Гї Г°ГіГ±Г±ГЄГ®ГЈГ® ГїГ§Г»ГЄГ  Гў ГЄГ®Г­Г±Г®Г«ГЁ
+#include<stdbool.h>																																//ГЃГЁГЎГ«ГЁГ®ГІГҐГЄГ  Г¤Г«Гї Г°Г ГЎГ®ГІГ» Г± Г¤ГўГ®ГЁГ·Г­Г»Г¬ГЁ Г·ГЁГ±Г«Г Г¬, C99
+#include<stdint.h>																																//ГЃГЁГЎГЁГ«Г®ГІГҐГЄГ  Г¤Г«Гї Г°Г ГЎГ®ГІГ» Г± Г­ГҐГ±ГІГ Г­Г¤Г Г°ГІГ­Г»Г¬ГЁ Г·ГЁГ±Г«Г Г¬ГЁ uint8_t, uint16_t, uint32_t
+#include<stdio.h>																																//ГЃГЁГЎГ«ГЁГ®ГІГҐГЄГ  Г¤Г«Гї Г°Г ГЎГ®ГІГ» Г± ГЄГ®Г­Г±Г®Г«ГјГѕ, ГўГ»ГўГ®Г¤ Гў ГЄГ®Г­Г±Г®Г«Гј ГЁ Г±Г·ГЁГІГ»ГўГ Г­ГЁГҐ Г± Г­ГҐГҐ
+#include<conio.h>																																//ГЃГЁГЎГЁГ«Г®ГІГҐГЄГ 
+#include<stdlib.h>																																//ГЃГЁГЎГЁГ«Г®ГІГҐГЄГ 
+#include<string.h>																																//ГЃГЁГЎГ«ГЁГ®ГІГҐГЄГ 
+#include<math.h>																																//ГЃГЁГЎГ«ГЁГ®ГІГҐГЄГ  Г± Г¬Г ГІГҐГ¬Г ГІГЁГ·ГҐГ±ГЄГЁГ¬ГЁ ГґГіГ­ГЄГ¶ГЁГїГ¬ГЁ
 //#include<windows.h>
 #define RusLang							setlocale(LC_ALL, "Rus")
-#define buildVersion					" v0.0.2\n"																								//версия билда. В данный момент идет альфа тест
-#define writeBufferSize					2048																									//константа размера массивов чтения и записи в файлы. Менять только её
+#define buildVersion					" v0.0.2\n"																								//ГўГҐГ°Г±ГЁГї ГЎГЁГ«Г¤Г . Г‚ Г¤Г Г­Г­Г»Г© Г¬Г®Г¬ГҐГ­ГІ ГЁГ¤ГҐГІ Г Г«ГјГґГ  ГІГҐГ±ГІ
+#define writeBufferSize					2048																									//ГЄГ®Г­Г±ГІГ Г­ГІГ  Г°Г Г§Г¬ГҐГ°Г  Г¬Г Г±Г±ГЁГўГ®Гў Г·ГІГҐГ­ГЁГї ГЁ Г§Г ГЇГЁГ±ГЁ Гў ГґГ Г©Г«Г». ГЊГҐГ­ГїГІГј ГІГ®Г«ГјГЄГ® ГҐВё
 #define inputBufferSize					writeBufferSize*4
 FILE* FRd;
 FILE* FIn;
@@ -31,11 +31,11 @@ void fileOpen(int openParam, char* fileName);
 void fileClose(void);
 void fileWrite(void);
 void printDebugMsg(uint8_t msgCode, uint8_t codeParameter, char charParameter);
-uint8_t crlfSign[2]={0x0D, 0x0A};																												//метка CR LF(перенос каретки на новую строку)	
-uint8_t resultToWrite[writeBufferSize];																											//массив, содержащий в себе подготовленную к записи информацию
+uint8_t crlfSign[2]={0x0D, 0x0A};																												//Г¬ГҐГІГЄГ  CR LF(ГЇГҐГ°ГҐГ­Г®Г± ГЄГ Г°ГҐГІГЄГЁ Г­Г  Г­Г®ГўГіГѕ Г±ГІГ°Г®ГЄГі)	
+uint8_t resultToWrite[writeBufferSize];																											//Г¬Г Г±Г±ГЁГў, Г±Г®Г¤ГҐГ°Г¦Г Г№ГЁГ© Гў Г±ГҐГЎГҐ ГЇГ®Г¤ГЈГ®ГІГ®ГўГ«ГҐГ­Г­ГіГѕ ГЄ Г§Г ГЇГЁГ±ГЁ ГЁГ­ГґГ®Г°Г¬Г Г¶ГЁГѕ
 char SearchWord[100];
-uint8_t fileMassive[inputBufferSize];																											//массив в который читается содержимое файла convertParams.ini
-char fileBuffer[inputBufferSize];																												//массив, в который будет производиться чтение сырых данных
+uint8_t fileMassive[inputBufferSize];																											//Г¬Г Г±Г±ГЁГў Гў ГЄГ®ГІГ®Г°Г»Г© Г·ГЁГІГ ГҐГІГ±Гї Г±Г®Г¤ГҐГ°Г¦ГЁГ¬Г®ГҐ ГґГ Г©Г«Г  convertParams.ini
+char fileBuffer[inputBufferSize];																												//Г¬Г Г±Г±ГЁГў, Гў ГЄГ®ГІГ®Г°Г»Г© ГЎГіГ¤ГҐГІ ГЇГ°Г®ГЁГ§ГўГ®Г¤ГЁГІГјГ±Гї Г·ГІГҐГ­ГЁГҐ Г±Г»Г°Г»Гµ Г¤Г Г­Г­Г»Гµ
 char fileSrcBuffer[64];
 char fileNameBuffer[64];
 char fileBodyBuffer[64];
@@ -50,7 +50,7 @@ char *wordConvert="Convert";
 char *wordSampleRate="SampleRate";
 char *wordChannels="Channels";
 char *wordBitsPerSample="BitsPerSample";
-char *WordCountOfSamples="SamplesInChannel";																									//образец тега SamplesInChannel
+char *WordCountOfSamples="SamplesInChannel";																									//Г®ГЎГ°Г Г§ГҐГ¶ ГІГҐГЈГ  SamplesInChannel
 char *cursorSymbol;
 const uint8_t HeaderSize=44;
 const uint8_t wordTagRange=4;
@@ -100,12 +100,12 @@ uint16_t secondChannel;
 uint16_t threeChannel;
 uint16_t fourChannel;
 uint16_t j=0;
-uint32_t samplesValue;																															//сюда будет писаться количество выборок в 1 канале файла
+uint32_t samplesValue;																															//Г±ГѕГ¤Г  ГЎГіГ¤ГҐГІ ГЇГЁГ±Г ГІГјГ±Гї ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® ГўГ»ГЎГ®Г°Г®ГЄ Гў 1 ГЄГ Г­Г Г«ГҐ ГґГ Г©Г«Г 
 int main(void)
 {
 	setlocale(LC_ALL, "Rus");
 	printDebugMsg(0,0,0);
-	printf(" Программа для поиска говнокода\n");
+	printf(" ГЏГ°Г®ГЈГ°Г Г¬Г¬Г  Г¤Г«Гї ГЇГ®ГЁГ±ГЄГ  ГЈГ®ГўГ­Г®ГЄГ®Г¤Г \n");
 	printDebugMsg(0,0,0);
 	printf(buildVersion);
 	fileOpen(2, "convertParams.ini");
@@ -113,11 +113,11 @@ int main(void)
 	{
 		printDebugMsg(0,0,0);
 		printDebugMsg(13,0,0);
-		printf(" Файл convertParams.ini найден и открыт\n");
+		printf(" Г”Г Г©Г« convertParams.ini Г­Г Г©Г¤ГҐГ­ ГЁ Г®ГІГЄГ°Г»ГІ\n");
 	}
 	else
 	{
-		printf("файл convertParams.ini не найден, будет создан файл по параметрам\n");
+		printf("ГґГ Г©Г« convertParams.ini Г­ГҐ Г­Г Г©Г¤ГҐГ­, ГЎГіГ¤ГҐГІ Г±Г®Г§Г¤Г Г­ ГґГ Г©Г« ГЇГ® ГЇГ Г°Г Г¬ГҐГІГ°Г Г¬\n");
 		fileWrite();
 		fileClose();
 	}
@@ -133,57 +133,57 @@ int main(void)
 	if(!checkIntegrity==0)
 	{
 		printDebugMsg(0,0,0);
-		printf(" Проверка целостности файла параметров выполнена. Параметры загружены в конвертер\n");
+		printf(" ГЏГ°Г®ГўГҐГ°ГЄГ  Г¶ГҐГ«Г®Г±ГІГ­Г®Г±ГІГЁ ГґГ Г©Г«Г  ГЇГ Г°Г Г¬ГҐГІГ°Г®Гў ГўГ»ГЇГ®Г«Г­ГҐГ­Г . ГЏГ Г°Г Г¬ГҐГІГ°Г» Г§Г ГЈГ°ГіГ¦ГҐГ­Г» Гў ГЄГ®Г­ГўГҐГ°ГІГҐГ°\n");
 	}
 	printDebugMsg(0,0,0);
 	printDebugMsg(13,0,0);
-	printf(" Попытка открыть файл %s для чтения... ",fileSrcBuffer);
+	printf(" ГЏГ®ГЇГ»ГІГЄГ  Г®ГІГЄГ°Г»ГІГј ГґГ Г©Г« %s Г¤Г«Гї Г·ГІГҐГ­ГЁГї... ",fileSrcBuffer);
 	FIn=fopen(fileSrcBuffer, "rb");
 	if(FIn != NULL)
 	{
-		printf("Успех\n");
+		printf("Г“Г±ГЇГҐГµ\n");
 	}
 	printDebugMsg(0,0,0);
-	printf(" Установлен размер буфера чтения в %d байт\n",sizeof(fileBuffer));
+	printf(" Г“Г±ГІГ Г­Г®ГўГ«ГҐГ­ Г°Г Г§Г¬ГҐГ° ГЎГіГґГҐГ°Г  Г·ГІГҐГ­ГЁГї Гў %d ГЎГ Г©ГІ\n",sizeof(fileBuffer));
 	printDebugMsg(0,0,0);
-	printf(" Установлен размер буфера записи в %d байт\n",sizeof(resultToWrite));
+	printf(" Г“Г±ГІГ Г­Г®ГўГ«ГҐГ­ Г°Г Г§Г¬ГҐГ° ГЎГіГґГҐГ°Г  Г§Г ГЇГЁГ±ГЁ Гў %d ГЎГ Г©ГІ\n",sizeof(resultToWrite));
 	byteShortCode=BitsPerSampleValue/8;
 	printDebugMsg(0,0,0);
-	printf(" Код вызова функции byteShorter: %d\n",byteShortCode);
+	printf(" ГЉГ®Г¤ ГўГ»Г§Г®ГўГ  ГґГіГ­ГЄГ¶ГЁГЁ byteShorter: %d\n",byteShortCode);
 	printDebugMsg(0,0,0);
 	printDebugMsg(14,0,0);
-	printf(" Создаю файл на запись с именем из convertParams.ini: %s",fileBodyBuffer);
+	printf(" Г‘Г®Г§Г¤Г Гѕ ГґГ Г©Г« Г­Г  Г§Г ГЇГЁГ±Гј Г± ГЁГ¬ГҐГ­ГҐГ¬ ГЁГ§ convertParams.ini: %s",fileBodyBuffer);
 	FOut=fopen(fileBodyBuffer, "wb");
 	//FOut=fopen("result.wav", "wb");
 	if(FOut != NULL)
 	{
-		printf(" Успех!\n");
+		printf(" Г“Г±ГЇГҐГµ!\n");
 	}
 	else
 	{
-		printf(" Произошла ошибка, выход...\n");
+		printf(" ГЏГ°Г®ГЁГ§Г®ГёГ«Г  Г®ГёГЁГЎГЄГ , ГўГ»ГµГ®Г¤...\n");
 		exit(0);
 	}
 	modOfDiv=fmod(samplesValue, sizeof(resultToWrite));
 	printDebugMsg(0,0,0);
-	printf(" Остаточный пакет байтов: %f\n",modOfDiv);
+	printf(" ГЋГ±ГІГ ГІГ®Г·Г­Г»Г© ГЇГ ГЄГҐГІ ГЎГ Г©ГІГ®Гў: %f\n",modOfDiv);
 	roundedVal=round(modOfDiv);
 	printDebugMsg(0,0,0);
-	printf(" Округленное значение: %d\n", roundedVal);
+	printf(" ГЋГЄГ°ГіГЈГ«ГҐГ­Г­Г®ГҐ Г§Г­Г Г·ГҐГ­ГЁГҐ: %d\n", roundedVal);
 	numberOfIterations=(samplesValue-modOfDiv)/sizeof(resultToWrite);
 	printDebugMsg(0,0,0);
-	printf(" Суммарное количество блоков размером %d байт на запись: %d\n",sizeof(resultToWrite),numberOfIterations);
+	printf(" Г‘ГіГ¬Г¬Г Г°Г­Г®ГҐ ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® ГЎГ«Г®ГЄГ®Гў Г°Г Г§Г¬ГҐГ°Г®Г¬ %d ГЎГ Г©ГІ Г­Г  Г§Г ГЇГЁГ±Гј: %d\n",sizeof(resultToWrite),numberOfIterations);
 	cursorPos2=HeaderSize;
 	writeParameters[0]=cursorPos2;
 	
 	for(uint32_t i=0;i<numberOfIterations;i++)
 	{	
-		//printf("Чанк №%d\n",i);
+		//printf("Г—Г Г­ГЄ В№%d\n",i);
 		cursorPos2=prepareArray(cursorPos2);
 		writeStat=writeChunk(writeParameters,sizeof(resultToWrite));
 		if(writeStat==0)
 		{
-			//printf("Чанк №%d в %d байт успешно записан\n",i,sizeof(resultToWrite));
+			//printf("Г—Г Г­ГЄ В№%d Гў %d ГЎГ Г©ГІ ГіГ±ГЇГҐГёГ­Г® Г§Г ГЇГЁГ±Г Г­\n",i,sizeof(resultToWrite));
 		}
 	}
 	fseek(FRd, 0, SEEK_SET);
@@ -195,21 +195,21 @@ int main(void)
 	}
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Ищу слово: %s\n", wordConvert);
+	printf("Г€Г№Гі Г±Г«Г®ГўГ®: %s\n", wordConvert);
 	cursorSymbol=strstr(fileBuffer, wordConvert);
 	wordConvertPos=cursorSymbol-fileBuffer;
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Начало слова на: %d Байт\n", wordConvertPos);
+	printf("ГЌГ Г·Г Г«Г® Г±Г«Г®ГўГ  Г­Г : %d ГЃГ Г©ГІ\n", wordConvertPos);
 	cursorPos=wordConvertPos+wordConvertShift;
 	fseek(FRd, cursorPos, SEEK_SET);
 	fscanf(FRd, "%d", &ConvertStat);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Флаг конвертации: %d\n", ConvertStat);
+	printf("Г”Г«Г ГЈ ГЄГ®Г­ГўГҐГ°ГІГ Г¶ГЁГЁ: %d\n", ConvertStat);
 	printDebugMsg(0,0,0);
 	printDebugMsg(16,0,0);
-	printf("Обновляю флаг конвертации...\n");
+	printf("ГЋГЎГ­Г®ГўГ«ГїГѕ ГґГ«Г ГЈ ГЄГ®Г­ГўГҐГ°ГІГ Г¶ГЁГЁ...\n");
 	fclose(FRd);
 	fileOpen(4, "convertParams.ini");
 	fseek(FRd, cursorPos, SEEK_SET);
@@ -220,16 +220,16 @@ int main(void)
 	fscanf(FRd, "%d", &ConvertStat);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Флаг конвертации: %d\n", ConvertStat);
+	printf("Г”Г«Г ГЈ ГЄГ®Г­ГўГҐГ°ГІГ Г¶ГЁГЁ: %d\n", ConvertStat);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Начало слова на: %d Байт\n", wordChannelsPos);
+	printf("ГЌГ Г·Г Г«Г® Г±Г«Г®ГўГ  Г­Г : %d ГЃГ Г©ГІ\n", wordChannelsPos);
 	cursorPos=wordChannelsPos+wordChannelsShift;
 	fseek(FRd, cursorPos, SEEK_SET);
 	fscanf(FRd, "%d", &channelsValue);
 	printDebugMsg(0,0,0);
 	printDebugMsg(16,0,0);
-	printf("Обновляю количество каналов...\n");
+	printf("ГЋГЎГ­Г®ГўГ«ГїГѕ ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® ГЄГ Г­Г Г«Г®Гў...\n");
 	fclose(FRd);
 	fileOpen(4, "convertParams.ini");
 	fseek(FRd, cursorPos, SEEK_SET);
@@ -240,16 +240,16 @@ int main(void)
 	fscanf(FRd, "%d", &ConvertStat);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Количество каналов: %d\n", channelsValue);
+	printf("ГЉГ®Г«ГЁГ·ГҐГ±ГІГўГ® ГЄГ Г­Г Г«Г®Гў: %d\n", channelsValue);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Начало слова на: %d Байт\n", wordBitsPerSamplePos);
+	printf("ГЌГ Г·Г Г«Г® Г±Г«Г®ГўГ  Г­Г : %d ГЃГ Г©ГІ\n", wordBitsPerSamplePos);
 	cursorPos=wordBitsPerSamplePos+wordBitsPerSampleShift;
 	fseek(FRd, cursorPos, SEEK_SET);
 	fscanf(FRd, "%d", &BitsPerSampleValue);
 	printDebugMsg(0,0,0);
 	printDebugMsg(16,0,0);
-	printf("Обновляю значение глубины выборки...\n");
+	printf("ГЋГЎГ­Г®ГўГ«ГїГѕ Г§Г­Г Г·ГҐГ­ГЁГҐ ГЈГ«ГіГЎГЁГ­Г» ГўГ»ГЎГ®Г°ГЄГЁ...\n");
 	fclose(FRd);
 	fileOpen(4, "convertParams.ini");
 	fseek(FRd, cursorPos, SEEK_SET);
@@ -260,7 +260,7 @@ int main(void)
 	fscanf(FRd, "%d", &ConvertStat);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Глубина выборки: %d бит\n", BitsPerSampleValue);
+	printf("ГѓГ«ГіГЎГЁГ­Г  ГўГ»ГЎГ®Г°ГЄГЁ: %d ГЎГЁГІ\n", BitsPerSampleValue);
 	fclose(FRd);
 	
 	fclose(FOut);
@@ -268,7 +268,7 @@ int main(void)
 	fileClose();
 	printDebugMsg(0,0,0);
 	printDebugMsg(17,0,0);
-	//printDebugMsg(0,0,0);				//КОСТЫЛЬ НА АВТОМАТИЗАЦИЮ
+	//printDebugMsg(0,0,0);				//ГЉГЋГ‘Г’Г›Г‹Гњ ГЌГЂ ГЂГ‚Г’ГЋГЊГЂГ’Г€Г‡ГЂГ–Г€Гћ
 	//printDebugMsg(15,0,0);
 	//getchar();
 	return 0;
@@ -311,17 +311,17 @@ void fileWrite(void)
 	char *WordSamples="SampleRate=";
 	char *WordChannels="Channels=";
 	char *WordBits="BitsPerSample=";
-	char *WordCountOfSamples="SamplesInChannel=";																								//образец тега SamplesInChannel
+	char *WordCountOfSamples="SamplesInChannel=";																								//Г®ГЎГ°Г Г§ГҐГ¶ ГІГҐГЈГ  SamplesInChannel
 	int smprt=192000;
 	int chnls=2;
 	int cnvrt=1;
 	int bits=24;
 	uint8_t crlfSign[2]={0x0D, 0x0A};
-	printf("Напишите частоту дискретизации в Гц: ");
+	printf("ГЌГ ГЇГЁГёГЁГІГҐ Г·Г Г±ГІГ®ГІГі Г¤ГЁГ±ГЄГ°ГҐГІГЁГ§Г Г¶ГЁГЁ Гў ГѓГ¶: ");
 	scanf("%d", &smprt);
-	printf("Напишите количество каналов, не больше 4: ");
+	printf("ГЌГ ГЇГЁГёГЁГІГҐ ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® ГЄГ Г­Г Г«Г®Гў, Г­ГҐ ГЎГ®Г«ГјГёГҐ 4: ");
 	scanf("%d", &chnls);
-	printf("Укажите разрядность, в битах: ");
+	printf("Г“ГЄГ Г¦ГЁГІГҐ Г°Г Г§Г°ГїГ¤Г­Г®Г±ГІГј, Гў ГЎГЁГІГ Гµ: ");
 	scanf("%d", &bits);
 	fileOpen(3, "convertParams.ini");
 	fseek(FRd, 0, SEEK_SET);
@@ -347,123 +347,123 @@ bool readConfig(void)
 	bool checkFileIntegrity=0;
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Ищу слово: %s (тег FSRC)\n", wordSrcFilenameStart);
+	printf("Г€Г№Гі Г±Г«Г®ГўГ®: %s (ГІГҐГЈ FSRC)\n", wordSrcFilenameStart);
 	cursorSymbol=strstr(fileBuffer, wordSrcFilenameStart);
 	fsrcPos=cursorSymbol-fileBuffer;
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Начало слова на: %d Байт\n", fsrcPos);
+	printf("ГЌГ Г·Г Г«Г® Г±Г«Г®ГўГ  Г­Г : %d ГЃГ Г©ГІ\n", fsrcPos);
 	fseek(FRd, fsrcPos+wordTagRange, SEEK_SET);
 	fsrcPos=ftell(FRd);
 	symbol=fgetc(FRd);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Проверка наличия указателя начала имени файла... ");
+	printf("ГЏГ°Г®ГўГҐГ°ГЄГ  Г­Г Г«ГЁГ·ГЁГї ГіГЄГ Г§Г ГІГҐГ«Гї Г­Г Г·Г Г«Г  ГЁГ¬ГҐГ­ГЁ ГґГ Г©Г«Г ... ");
 	if(symbol==0x3E)
 	{
-		printf("Указатель найден");
+		printf("Г“ГЄГ Г§Г ГІГҐГ«Гј Г­Г Г©Г¤ГҐГ­");
 		fsrcPos++;
 		checkFileIntegrity=1;
 	}
 	printf("(%d)\n",fsrcPos);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Ищу слово: %s (тег FSND)\n", wordSrcFilenameEnd);
+	printf("Г€Г№Гі Г±Г«Г®ГўГ®: %s (ГІГҐГЈ FSND)\n", wordSrcFilenameEnd);
 	cursorSymbol=strstr(fileBuffer, wordSrcFilenameEnd);
 	fsendPos=cursorSymbol-fileBuffer;
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Начало слова на: %d Байт\n", fsendPos);
+	printf("ГЌГ Г·Г Г«Г® Г±Г«Г®ГўГ  Г­Г : %d ГЃГ Г©ГІ\n", fsendPos);
 	fseek(FRd, fsendPos-wordTagStepBack, SEEK_SET);
 	fsendPos=ftell(FRd);
 	symbol=fgetc(FRd);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Проверка наличия указателя конца имени файла... ");
+	printf("ГЏГ°Г®ГўГҐГ°ГЄГ  Г­Г Г«ГЁГ·ГЁГї ГіГЄГ Г§Г ГІГҐГ«Гї ГЄГ®Г­Г¶Г  ГЁГ¬ГҐГ­ГЁ ГґГ Г©Г«Г ... ");
 	if(symbol==0x3E)
 	{
-		printf("Указатель найден");
+		printf("Г“ГЄГ Г§Г ГІГҐГ«Гј Г­Г Г©Г¤ГҐГ­");
 		checkFileIntegrity=1;
 	}
 	printf("(%d)\n",fsendPos);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Ищу слово: %s (тег FNAM)\n", wordFilenameStart);
+	printf("Г€Г№Гі Г±Г«Г®ГўГ®: %s (ГІГҐГЈ FNAM)\n", wordFilenameStart);
 	cursorSymbol=strstr(fileBuffer, wordFilenameStart);
 	fnamPos=cursorSymbol-fileBuffer;
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Начало слова на: %d Байт\n", fnamPos);
+	printf("ГЌГ Г·Г Г«Г® Г±Г«Г®ГўГ  Г­Г : %d ГЃГ Г©ГІ\n", fnamPos);
 	fseek(FRd, fnamPos+wordTagRange, SEEK_SET);
 	fnamPos=ftell(FRd);
 	symbol=fgetc(FRd);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Проверка наличия указателя начала имени файла... ");
+	printf("ГЏГ°Г®ГўГҐГ°ГЄГ  Г­Г Г«ГЁГ·ГЁГї ГіГЄГ Г§Г ГІГҐГ«Гї Г­Г Г·Г Г«Г  ГЁГ¬ГҐГ­ГЁ ГґГ Г©Г«Г ... ");
 	if(symbol==0x3E)
 	{
-		printf("Указатель найден");
+		printf("Г“ГЄГ Г§Г ГІГҐГ«Гј Г­Г Г©Г¤ГҐГ­");
 		fnamPos++;
 		checkFileIntegrity=1;
 	}
 	printf("(%d)\n",fnamPos);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Ищу слово: %s (тег FNND)\n", wordNamFilenameEnd);
+	printf("Г€Г№Гі Г±Г«Г®ГўГ®: %s (ГІГҐГЈ FNND)\n", wordNamFilenameEnd);
 	cursorSymbol=strstr(fileBuffer, wordNamFilenameEnd);
 	fnendPos=cursorSymbol-fileBuffer;
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Начало слова на: %d Байт\n", fnendPos);
+	printf("ГЌГ Г·Г Г«Г® Г±Г«Г®ГўГ  Г­Г : %d ГЃГ Г©ГІ\n", fnendPos);
 	fseek(FRd, fnendPos-wordTagStepBack, SEEK_SET);
 	fnendPos=ftell(FRd);
 	symbol=fgetc(FRd);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Проверка наличия указателя конца имени файла... ");
+	printf("ГЏГ°Г®ГўГҐГ°ГЄГ  Г­Г Г«ГЁГ·ГЁГї ГіГЄГ Г§Г ГІГҐГ«Гї ГЄГ®Г­Г¶Г  ГЁГ¬ГҐГ­ГЁ ГґГ Г©Г«Г ... ");
 	if(symbol==0x3E)
 	{
-		printf("Указатель найден");
+		printf("Г“ГЄГ Г§Г ГІГҐГ«Гј Г­Г Г©Г¤ГҐГ­");
 		checkFileIntegrity=1;
 	}
 	printf("(%d)\n",fnendPos);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Ищу слово: %s (тег FBOD)\n", wordFilenameBody);
+	printf("Г€Г№Гі Г±Г«Г®ГўГ®: %s (ГІГҐГЈ FBOD)\n", wordFilenameBody);
 	cursorSymbol=strstr(fileBuffer, wordFilenameBody);
 	fbodPos=cursorSymbol-fileBuffer;
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Начало слова на: %d Байт\n", fbodPos);
+	printf("ГЌГ Г·Г Г«Г® Г±Г«Г®ГўГ  Г­Г : %d ГЃГ Г©ГІ\n", fbodPos);
 	fseek(FRd, fbodPos+wordTagRange, SEEK_SET);
 	fbodPos=ftell(FRd);
 	symbol=fgetc(FRd);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Проверка наличия указателя конца имени файла... ");
+	printf("ГЏГ°Г®ГўГҐГ°ГЄГ  Г­Г Г«ГЁГ·ГЁГї ГіГЄГ Г§Г ГІГҐГ«Гї ГЄГ®Г­Г¶Г  ГЁГ¬ГҐГ­ГЁ ГґГ Г©Г«Г ... ");
 	if(symbol==0x3E)
 	{
-		printf("Указатель найден");
+		printf("Г“ГЄГ Г§Г ГІГҐГ«Гј Г­Г Г©Г¤ГҐГ­");
 		checkFileIntegrity=1;
 	}
 	printf("(%d)\n",fbodPos);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Ищу слово: %s (тег FBND)\n", wordBodyFilenameEnd);
+	printf("Г€Г№Гі Г±Г«Г®ГўГ®: %s (ГІГҐГЈ FBND)\n", wordBodyFilenameEnd);
 	cursorSymbol=strstr(fileBuffer, wordBodyFilenameEnd);
 	fbendPos=cursorSymbol-fileBuffer;
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Начало слова на: %d Байт\n", fbendPos);
+	printf("ГЌГ Г·Г Г«Г® Г±Г«Г®ГўГ  Г­Г : %d ГЃГ Г©ГІ\n", fbendPos);
 	fseek(FRd, fbendPos-wordTagStepBack, SEEK_SET);
 	fbendPos=ftell(FRd);
 	symbol=fgetc(FRd);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Проверка наличия указателя конца имени файла... ");
+	printf("ГЏГ°Г®ГўГҐГ°ГЄГ  Г­Г Г«ГЁГ·ГЁГї ГіГЄГ Г§Г ГІГҐГ«Гї ГЄГ®Г­Г¶Г  ГЁГ¬ГҐГ­ГЁ ГґГ Г©Г«Г ... ");
 	if(symbol==0x3E)
 	{
-		printf("Указатель найден");
+		printf("Г“ГЄГ Г§Г ГІГҐГ«Гј Г­Г Г©Г¤ГҐГ­");
 		checkFileIntegrity=1;
 	}
 	printf("(%d)\n",fbendPos);
@@ -490,7 +490,7 @@ bool readConfig(void)
 		cursorPos++;
 	}
 	cursorPos=0;
-	cursorPos2=fbodPos+1;																														//костыль
+	cursorPos2=fbodPos+1;																														//ГЄГ®Г±ГІГ»Г«Гј
 	while(cursorPos2<fbendPos)
 	{
 		fileBodyBuffer[cursorPos]=fileBuffer[cursorPos2];
@@ -503,104 +503,104 @@ bool readConfig(void)
 	cursorPos2=0;
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Диапазон имени исходного файла %d...%d(%s)\n",fsrcPos,fsendPos,fileSrcBuffer);
+	printf("Г„ГЁГ ГЇГ Г§Г®Г­ ГЁГ¬ГҐГ­ГЁ ГЁГ±ГµГ®Г¤Г­Г®ГЈГ® ГґГ Г©Г«Г  %d...%d(%s)\n",fsrcPos,fsendPos,fileSrcBuffer);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Диапазон имени заголовочного файла %d...%d(%s)\n",fnamPos,fnendPos,fileNameBuffer);
+	printf("Г„ГЁГ ГЇГ Г§Г®Г­ ГЁГ¬ГҐГ­ГЁ Г§Г ГЈГ®Г«Г®ГўГ®Г·Г­Г®ГЈГ® ГґГ Г©Г«Г  %d...%d(%s)\n",fnamPos,fnendPos,fileNameBuffer);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Диапазон имени файла-контейнера тела %d...%d(%s)\n",fbodPos,fbendPos,fileBodyBuffer);
+	printf("Г„ГЁГ ГЇГ Г§Г®Г­ ГЁГ¬ГҐГ­ГЁ ГґГ Г©Г«Г -ГЄГ®Г­ГІГҐГ©Г­ГҐГ°Г  ГІГҐГ«Г  %d...%d(%s)\n",fbodPos,fbendPos,fileBodyBuffer);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Ищу слово: %s\n", wordConvert);
+	printf("Г€Г№Гі Г±Г«Г®ГўГ®: %s\n", wordConvert);
 	cursorSymbol=strstr(fileBuffer, wordConvert);
 	wordConvertPos=cursorSymbol-fileBuffer;
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Начало слова на: %d Байт\n", wordConvertPos);
+	printf("ГЌГ Г·Г Г«Г® Г±Г«Г®ГўГ  Г­Г : %d ГЃГ Г©ГІ\n", wordConvertPos);
 	cursorPos=wordConvertPos+wordConvertShift;
 	fseek(FRd, cursorPos, SEEK_SET);
 	fscanf(FRd, "%d", &ConvertStat);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Флаг конвертации: %d", ConvertStat);
+	printf("Г”Г«Г ГЈ ГЄГ®Г­ГўГҐГ°ГІГ Г¶ГЁГЁ: %d", ConvertStat);
 	if(ConvertStat==0)
 	{
-		printf(", необходима конвертация\n");
+		printf(", Г­ГҐГ®ГЎГµГ®Г¤ГЁГ¬Г  ГЄГ®Г­ГўГҐГ°ГІГ Г¶ГЁГї\n");
 	}
 	else
 	{
-		printf(", конвертация уже была проведена. Необходимо склеить заголовок и тело\n");
+		printf(", ГЄГ®Г­ГўГҐГ°ГІГ Г¶ГЁГї ГіГ¦ГҐ ГЎГ»Г«Г  ГЇГ°Г®ГўГҐГ¤ГҐГ­Г . ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® Г±ГЄГ«ГҐГЁГІГј Г§Г ГЈГ®Г«Г®ГўГ®ГЄ ГЁ ГІГҐГ«Г®\n");
 	}
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Ищу слово: %s\n", wordSampleRate);
+	printf("Г€Г№Гі Г±Г«Г®ГўГ®: %s\n", wordSampleRate);
 	cursorSymbol=strstr(fileBuffer, wordSampleRate);
 	wordSampleRatePos=cursorSymbol-fileBuffer;
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Начало слова на: %d Байт\n", wordSampleRatePos);
+	printf("ГЌГ Г·Г Г«Г® Г±Г«Г®ГўГ  Г­Г : %d ГЃГ Г©ГІ\n", wordSampleRatePos);
 	cursorPos=wordSampleRatePos+wordSampleRateShift;
 	fseek(FRd, cursorPos, SEEK_SET);
 	fscanf(FRd, "%d", &SampleRateValue);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Частота дискретизации: %d Гц\n", SampleRateValue);
+	printf("Г—Г Г±ГІГ®ГІГ  Г¤ГЁГ±ГЄГ°ГҐГІГЁГ§Г Г¶ГЁГЁ: %d ГѓГ¶\n", SampleRateValue);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Ищу слово: %s\n", wordChannels);
+	printf("Г€Г№Гі Г±Г«Г®ГўГ®: %s\n", wordChannels);
 	cursorSymbol=strstr(fileBuffer, wordChannels);
 	wordChannelsPos=cursorSymbol-fileBuffer;
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Начало слова на: %d Байт\n", wordChannelsPos);
+	printf("ГЌГ Г·Г Г«Г® Г±Г«Г®ГўГ  Г­Г : %d ГЃГ Г©ГІ\n", wordChannelsPos);
 	cursorPos=wordChannelsPos+wordChannelsShift;
 	fseek(FRd, cursorPos, SEEK_SET);
 	fscanf(FRd, "%d", &channelsValue);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Количество каналов: %d, ", channelsValue);
+	printf("ГЉГ®Г«ГЁГ·ГҐГ±ГІГўГ® ГЄГ Г­Г Г«Г®Гў: %d, ", channelsValue);
 	switch(channelsValue)
 	{
 		case 1:
-			printf("моно\n");
+			printf("Г¬Г®Г­Г®\n");
 			break;
 		case 2:
-			printf("стерео\n");
+			printf("Г±ГІГҐГ°ГҐГ®\n");
 			break;
 		case 4:
-			printf("квадро\n");
+			printf("ГЄГўГ Г¤Г°Г®\n");
 			break;
 	}
 	
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);	
-	printf("Ищу слово: %s\n", wordBitsPerSample);
+	printf("Г€Г№Гі Г±Г«Г®ГўГ®: %s\n", wordBitsPerSample);
 	cursorSymbol=strstr(fileBuffer, wordBitsPerSample);
 	wordBitsPerSamplePos=cursorSymbol-fileBuffer;
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Начало слова на: %d Байт\n", wordBitsPerSamplePos);
+	printf("ГЌГ Г·Г Г«Г® Г±Г«Г®ГўГ  Г­Г : %d ГЃГ Г©ГІ\n", wordBitsPerSamplePos);
 	cursorPos=wordBitsPerSamplePos+wordBitsPerSampleShift;
 	fseek(FRd, cursorPos, SEEK_SET);
 	fscanf(FRd, "%d", &BitsPerSampleValue);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Глубина выборки: %d бит\n", BitsPerSampleValue);
+	printf("ГѓГ«ГіГЎГЁГ­Г  ГўГ»ГЎГ®Г°ГЄГЁ: %d ГЎГЁГІ\n", BitsPerSampleValue);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);	
-	printf("Ищу слово: %s\n", WordCountOfSamples);
+	printf("Г€Г№Гі Г±Г«Г®ГўГ®: %s\n", WordCountOfSamples);
 	cursorSymbol=strstr(fileBuffer, WordCountOfSamples);
 	wordSamplesValue=cursorSymbol-fileBuffer;
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Начало слова на: %d Байт\n", wordSamplesValue);
+	printf("ГЌГ Г·Г Г«Г® Г±Г«Г®ГўГ  Г­Г : %d ГЃГ Г©ГІ\n", wordSamplesValue);
 	cursorPos=wordSamplesValue+wordSamplesValueShift;
 	fseek(FRd, cursorPos, SEEK_SET);
 	fscanf(FRd, "%d", &samplesValue);
 	printDebugMsg(0,0,0);
 	printDebugMsg(1,0,0);
-	printf("Суммарное количество выборок в одном канале: %d\n", samplesValue);
+	printf("Г‘ГіГ¬Г¬Г Г°Г­Г®ГҐ ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® ГўГ»ГЎГ®Г°Г®ГЄ Гў Г®Г¤Г­Г®Г¬ ГЄГ Г­Г Г«ГҐ: %d\n", samplesValue);
 	return checkFileIntegrity;
 }
 uint8_t bitShorter(uint8_t inputFormat, uint32_t inputWord)
@@ -608,7 +608,7 @@ uint8_t bitShorter(uint8_t inputFormat, uint32_t inputWord)
 	switch(inputFormat)
 	{
 		case 0:
-			printf("Такого формата данных не бывает!");
+			printf("Г’Г ГЄГ®ГЈГ® ГґГ®Г°Г¬Г ГІГ  Г¤Г Г­Г­Г»Гµ Г­ГҐ ГЎГ»ГўГ ГҐГІ!");
 			break;
 		case 1:
 			return inputWord;
@@ -646,23 +646,23 @@ uint32_t prepareArray(uint32_t startPos)
 }*/
 uint16_t TwoBytesSampleReader(uint16_t posCursor)
 {
-	//printf("Начало работы функции считывания 16 разрядных семплов...\n");
+	//printf("ГЌГ Г·Г Г«Г® Г°Г ГЎГ®ГІГ» ГґГіГ­ГЄГ¶ГЁГЁ Г±Г·ГЁГІГ»ГўГ Г­ГЁГї 16 Г°Г Г§Г°ГїГ¤Г­Г»Гµ Г±ГҐГ¬ГЇГ«Г®Гў...\n");
 	uint16_t tempVal;
 	uint8_t tempVal8;
 	uint8_t oneByte[2];
 	memset(oneByte, 0x00, sizeof(oneByte));
-	//printf("Позиция курсора в файле: %d\n",posCursor);
+	//printf("ГЏГ®Г§ГЁГ¶ГЁГї ГЄГіГ°Г±Г®Г°Г  Гў ГґГ Г©Г«ГҐ: %d\n",posCursor);
 	//fseek(FIn, posCursor, SEEK_SET);
 	//fread(oneByte, 2, sizeof(oneByte), FIn);
 	oneByte[0]=fileMassive[posCursor];
 	oneByte[1]=fileMassive[posCursor+1];
 	tempVal8=oneByte[0];
-	//printf("Старший байт: 0x%02X\n", tempVal8);
+	//printf("Г‘ГІГ Г°ГёГЁГ© ГЎГ Г©ГІ: 0x%02X\n", tempVal8);
 	tempVal8=oneByte[1];
-	//printf("Младший байт: 0x%02X\n", tempVal8);
+	//printf("ГЊГ«Г Г¤ГёГЁГ© ГЎГ Г©ГІ: 0x%02X\n", tempVal8);
 	tempVal=oneByte[0];
 	tempVal=tempVal|oneByte[1]<<8;
-	//printf("Полученный 16 битный семпл: 0x%04X\n",tempVal);
+	//printf("ГЏГ®Г«ГіГ·ГҐГ­Г­Г»Г© 16 ГЎГЁГІГ­Г»Г© Г±ГҐГ¬ГЇГ«: 0x%04X\n",tempVal);
 	return tempVal;
 }
 /*uint32_t ThreeByteSampleReader(char* filesStream, uint32_t posCursor)
@@ -677,11 +677,11 @@ uint8_t stereoToMonoMixer(uint8_t firstChannel, uint8_t secondChannel)
 {
 	uint8_t valueToReturn;
 	uint16_t scrapValue;
-	//printf("начало работы микшера каналов...\n");
+	//printf("Г­Г Г·Г Г«Г® Г°Г ГЎГ®ГІГ» Г¬ГЁГЄГёГҐГ°Г  ГЄГ Г­Г Г«Г®Гў...\n");
 	scrapValue = firstChannel+secondChannel;
-	//printf("Промежуточная переменная(16 бит): 0x%04X\n",scrapValue);
+	//printf("ГЏГ°Г®Г¬ГҐГ¦ГіГІГ®Г·Г­Г Гї ГЇГҐГ°ГҐГ¬ГҐГ­Г­Г Гї(16 ГЎГЁГІ): 0x%04X\n",scrapValue);
 	valueToReturn = scrapValue/2;
-	//printf("Переменная на выдачу: 0x%02X\n",valueToReturn);
+	//printf("ГЏГҐГ°ГҐГ¬ГҐГ­Г­Г Гї Г­Г  ГўГ»Г¤Г Г·Гі: 0x%02X\n",valueToReturn);
 	return valueToReturn;
 }
 /*uint8_t threeChToMonoMixer(uint8_t firstChannel, uint8_t secondChannel, uint8_t threeChannel);
@@ -706,22 +706,22 @@ bool writeChunk(uint32_t *ptrParamMas, uint16_t ptrRange)
 	uint16_t indexOne=0;
 	uint16_t writeResult;
 	uint32_t fOutWriteCursor=ptrParamMas[1];
-	//printf("Указатель на позицию в потоке FOut: %d\n",fOutWriteCursor);
+	//printf("Г“ГЄГ Г§Г ГІГҐГ«Гј Г­Г  ГЇГ®Г§ГЁГ¶ГЁГѕ Гў ГЇГ®ГІГ®ГЄГҐ FOut: %d\n",fOutWriteCursor);
 	for(int i=0;i<sizeof(fileBuffer);i=i+4)
 	{
 		TwoByteSample=TwoBytesSampleReader(i);
 		firstChannel=bitShorter(byteShortCode,TwoByteSample);
 		firstChannel=firstChannel-128;
-		//printf("bitShorter вернул значение(1 канал): 0x%02X\n", firstChannel);
+		//printf("bitShorter ГўГҐГ°Г­ГіГ« Г§Г­Г Г·ГҐГ­ГЁГҐ(1 ГЄГ Г­Г Г«): 0x%02X\n", firstChannel);
 		TwoByteSample=TwoBytesSampleReader(i+2);
 		secondChannel=bitShorter(byteShortCode,TwoByteSample);
 		secondChannel=secondChannel-128;
-		//printf("bitShorter вернул значение(2 канал): 0x%02X\n", secondChannel);
+		//printf("bitShorter ГўГҐГ°Г­ГіГ« Г§Г­Г Г·ГҐГ­ГЁГҐ(2 ГЄГ Г­Г Г«): 0x%02X\n", secondChannel);
 		returnedValue=stereoToMonoMixer(firstChannel,secondChannel);
-		//printf("Среднее двух каналов: 0x%02X\n", returnedValue);
+		//printf("Г‘Г°ГҐГ¤Г­ГҐГҐ Г¤ГўГіГµ ГЄГ Г­Г Г«Г®Гў: 0x%02X\n", returnedValue);
 		resultToWrite[indexOne]=returnedValue;
 		indexOne++;
-		//printf("Индекс массива: %d\n", indexOne);
+		//printf("Г€Г­Г¤ГҐГЄГ± Г¬Г Г±Г±ГЁГўГ : %d\n", indexOne);
 	}
 	writeResult = writeFile(resultToWrite, ptrRange, fOutWriteCursor);
 	fOutWriteCursor=fOutWriteCursor+sizeof(resultToWrite);
@@ -736,59 +736,59 @@ void printDebugMsg(uint8_t msgCode, uint8_t codeParameter, char charParameter)
 	switch(msgCode)
 	{
 		case 0:
-			printf("[ОТЛАДКА]");
+			printf("[ГЋГ’Г‹ГЂГ„ГЉГЂ]");
 			break;
 		case 1:
-			printf("[ЗАГРУЗКА ПАРАМЕТРОВ] ");
+			printf("[Г‡ГЂГѓГђГ“Г‡ГЉГЂ ГЏГЂГђГЂГЊГ…Г’ГђГЋГ‚] ");
 			break;
 		case 2:
-			printf("Не найден ");
+			printf("ГЌГҐ Г­Г Г©Г¤ГҐГ­ ");
 			break;
 		case 3:
-			printf("тег FSRC\n");
+			printf("ГІГҐГЈ FSRC\n");
 			break;
 		case 4:
-			printf("тег FNAM\n");
+			printf("ГІГҐГЈ FNAM\n");
 			break;
 		case 5:
-			printf("тег FSND\n");
+			printf("ГІГҐГЈ FSND\n");
 			break;
 		case 6:
-			printf("тег FNND\n");
+			printf("ГІГҐГЈ FNND\n");
 			break;
 		case 7:
-			printf("Выход...");
+			printf("Г‚Г»ГµГ®Г¤...");
 			exit(1);
 			break;
 		case 8:
-			printf("указатель начала ");
+			printf("ГіГЄГ Г§Г ГІГҐГ«Гј Г­Г Г·Г Г«Г  ");
 			break;
 		case 9:
-			printf("указатель конца ");
+			printf("ГіГЄГ Г§Г ГІГҐГ«Гј ГЄГ®Г­Г¶Г  ");
 			break;
 		case 10:
-			printf("исходного ");
+			printf("ГЁГ±ГµГ®Г¤Г­Г®ГЈГ® ");
 			break;
 		case 11:
-			printf("сгенерированного ");
+			printf("Г±ГЈГҐГ­ГҐГ°ГЁГ°Г®ГўГ Г­Г­Г®ГЈГ® ");
 			break;
 		case 12:
-			printf("имени файла\n");
+			printf("ГЁГ¬ГҐГ­ГЁ ГґГ Г©Г«Г \n");
 			break;
 		case 13:
-			printf("[ЧТЕНИЕ]");
+			printf("[Г—Г’Г…ГЌГ€Г…]");
 			break;
 		case 14:
-			printf("[ЗАПИСЬ]");
+			printf("[Г‡ГЂГЏГ€Г‘Гњ]");
 			break;
 		case 15:
-			printf(" Работа завершена. Нажмите Enter для выхода из программы...");
+			printf(" ГђГ ГЎГ®ГІГ  Г§Г ГўГҐГ°ГёГҐГ­Г . ГЌГ Г¦Г¬ГЁГІГҐ Enter Г¤Г«Гї ГўГ»ГµГ®Г¤Г  ГЁГ§ ГЇГ°Г®ГЈГ°Г Г¬Г¬Г»...");
 			break;
 		case 16:
-			printf("[ЗАПИСЬ ПАРАМЕТРОВ] ");
+			printf("[Г‡ГЂГЏГ€Г‘Гњ ГЏГЂГђГЂГЊГ…Г’ГђГЋГ‚] ");
 			break;
 		case 17:
-			printf(" Работа завершена. Теперь необходимо повторно запустить Exheader для формирования\n	  файла заголовка из записанных после конвертации параметров\n");
+			printf(" ГђГ ГЎГ®ГІГ  Г§Г ГўГҐГ°ГёГҐГ­Г . Г’ГҐГЇГҐГ°Гј Г­ГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГЇГ®ГўГІГ®Г°Г­Г® Г§Г ГЇГіГ±ГІГЁГІГј Exheader Г¤Г«Гї ГґГ®Г°Г¬ГЁГ°Г®ГўГ Г­ГЁГї\n	  ГґГ Г©Г«Г  Г§Г ГЈГ®Г«Г®ГўГЄГ  ГЁГ§ Г§Г ГЇГЁГ±Г Г­Г­Г»Гµ ГЇГ®Г±Г«ГҐ ГЄГ®Г­ГўГҐГ°ГІГ Г¶ГЁГЁ ГЇГ Г°Г Г¬ГҐГІГ°Г®Гў\n");
 			break;
 	}
 }
