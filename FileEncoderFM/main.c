@@ -6,10 +6,10 @@
 #include <windows.h>
 #include <math.h>
 #include "utils.h"
-#define bufferLength		32768
-#define headerLength		4096
+#define bufferLength		65535
+#define headerLength		8192
 #define fileBlockSize		255
-#define StartMsg			"v0.0.2 build 12\n"
+#define StartMsg			"v0.0.2 build 13\n"
 #define codePageInfo 		"Задана кодовая таблица приложения OEM CP-866\n"
 char fileBuffer[256];
 char fileName[128];
@@ -193,7 +193,7 @@ int main(int argc, char* argv[])
 	{printf("Задан размер буфера под остаток в %d байт\n",roundedVal+1);}
 	stopIteration=sizeof(fileBuffer);
 	fseek(FOut,0,SEEK_SET);
-	transferIndex=writeCalibrate(1,31,31,31);
+	transferIndex=writeCalibrate(1,64,48,48);
 	fwrite(bufferMas,1,transferIndex,FOut);
 	GetFileName(argv[1],fInf.fileSrc);
 	splitFileName(fInf.fileSrc, fInf.fileName, fInf.fileExt);
