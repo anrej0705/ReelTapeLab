@@ -10,7 +10,7 @@
 #define headerLength		8192
 #define fileBlockSize		255
 #define StartMsg			"v0.0.2 build 13\n"
-#define codePageInfo 		"Задана кодовая таблица приложения OEM CP-866\n"
+#define codePageInfo 		"тАб┬а┬д┬а┬н┬а ┬к┬о┬д┬о┬в┬а├п ├в┬а┬б┬л┬и├ж┬а ┬п├а┬и┬л┬о┬ж┬е┬н┬и├п OEM CP-866\n"
 char fileBuffer[256];
 char fileName[128];
 char tempName[9]="generated";
@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
 	SoundChannels=1;
 	BitDepth=8;
 	headerBlk = malloc(headerLength);	
-	bufferMas = malloc(bufferLength);				//буфер под пачку семплов генерируемых из 256 байт данных. Должно хватить
+	bufferMas = malloc(bufferLength);				//┬б├г├д┬е├а ┬п┬о┬д ┬п┬а├з┬к├г ├б┬е┬м┬п┬л┬о┬в ┬г┬е┬н┬е├а┬и├а├г┬е┬м├л├е ┬и┬з 256 ┬б┬а┬й├в ┬д┬а┬н┬н├л├е. тАЮ┬о┬л┬ж┬н┬о ├е┬в┬а├в┬и├в├м
 	memset(bufferMas,0x00,sizeof(bufferMas));
 	codePageNum = GetConsoleOutputCP();
 	printf("Current console output codepage: %d\n",codePageNum);
@@ -161,13 +161,13 @@ int main(int argc, char* argv[])
 		setInCodePageStatus=SetConsoleCP(866);
 		if(setOutCodePageStatus&&setInCodePageStatus != 0)
 		{printf(codePageInfo);}}
-	else{printf("Переключение кодовой страницы не требуется\n");}
-	printf("Преобразователь форматов BIN->WAV(дискретная FM модуляция) \n");
+	else{printf("┬П┬е├а┬е┬к┬л├о├з┬е┬н┬и┬е ┬к┬о┬д┬о┬в┬о┬й ├б├в├а┬а┬н┬и├ж├л ┬н┬е ├в├а┬е┬б├г┬е├в├б├п\n");}
+	printf("┬П├а┬е┬о┬б├а┬а┬з┬о┬в┬а├в┬е┬л├м ├д┬о├а┬м┬а├в┬о┬в BIN->WAV(┬д┬и├б┬к├а┬е├в┬н┬а├п FM ┬м┬о┬д├г┬л├п├ж┬и├п) \n");
 	printf(StartMsg);
-	printf("Ну чо пацаны, я слетел с шараги так что теперь прога быстрее будет писаться. \nВсем гулям ку остальным соболезную\n");
+	printf("┬Н├г ├з┬о ┬п┬а├ж┬а┬н├л, ├п ├б┬л┬е├в┬е┬л ├б ├и┬а├а┬а┬г┬и ├в┬а┬к ├з├в┬о ├в┬е┬п┬е├а├м ┬п├а┬о┬г┬а ┬б├л├б├в├а┬е┬е ┬б├г┬д┬е├в ┬п┬и├б┬а├в├м├б├п. \nтАЪ├б┬е┬м ┬г├г┬л├п┬м ┬к├г ┬о├б├в┬а┬л├м┬н├л┬м ├б┬о┬б┬о┬л┬е┬з┬н├г├о\n");
 	FIn=fopen(argv[1],"rb");
 	if(!FIn&&argc<3){
-		printf("Не найден файл %s, или не указаны аргументы\n",argv[1]);
+		printf("┬Н┬е ┬н┬а┬й┬д┬е┬н ├д┬а┬й┬л %s, ┬и┬л┬и ┬н┬е ├г┬к┬а┬з┬а┬н├л ┬а├а┬г├г┬м┬е┬н├в├л\n",argv[1]);
 		exit(1);}
 	transformFileName(tempName, sizeof(tempName), headerNameSuffix, sizeof(headerNameSuffix), fileNameHdrDat);
 	transformFileName(tempName, sizeof(tempName), headerBodySuffix, sizeof(headerBodySuffix), fileNameBodDat);
@@ -175,22 +175,22 @@ int main(int argc, char* argv[])
 	FOut=fopen(fileNameBodDat, "wb");
 	fseek(FIn,0,SEEK_END);
 	fileSize=ftell(FIn);
-	//printf("Размер входного файла: %d байт\n",fileSize);
+	//printf("┬Р┬а┬з┬м┬е├а ┬в├е┬о┬д┬н┬о┬г┬о ├д┬а┬й┬л┬а: %d ┬б┬а┬й├в\n",fileSize);
 	pulsTim.tSP=(wavSampleRate/carrierFreq)*pulsTim.pkgSeparatorTiming;
 	pulsTim.tTR=(wavSampleRate/carrierFreq)*pulsTim.logTrueTiming;
 	pulsTim.tFL=(wavSampleRate/carrierFreq)*pulsTim.logElseTiming;
 	pulsTim.tSB=(wavSampleRate/carrierFreq)*pulsTim.bitSeparatorTiming;
-	printf("Тайминг стоп-бита: %d\nТайминг лог.0: %d\nТайминг лог.1: %d\nТайминг паузы между отправкой битов: %d\n",pulsTim.tSP,pulsTim.tFL,pulsTim.tTR,pulsTim.tSB);
-	printf("f(дискр)=%d\nf(несущ)=%d\n",wavSampleRate,carrierFreq);
+	printf("тАЩ┬а┬й┬м┬и┬н┬г ├б├в┬о┬п-┬б┬и├в┬а: %d\nтАЩ┬а┬й┬м┬и┬н┬г ┬л┬о┬г.0: %d\nтАЩ┬а┬й┬м┬и┬н┬г ┬л┬о┬г.1: %d\nтАЩ┬а┬й┬м┬и┬н┬г ┬п┬а├г┬з├л ┬м┬е┬ж┬д├г ┬о├в┬п├а┬а┬в┬к┬о┬й ┬б┬и├в┬о┬в: %d\n",pulsTim.tSP,pulsTim.tFL,pulsTim.tTR,pulsTim.tSB);
+	printf("f(┬д┬и├б┬к├а)=%d\nf(┬н┬е├б├г├й)=%d\n",wavSampleRate,carrierFreq);
 	modOfDiv=fmod(fileSize, sizeof(fileBuffer));
-	//printf("Остаточный пакет байтов: %f\n",modOfDiv);
+	//printf("┼╜├б├в┬а├в┬о├з┬н├л┬й ┬п┬а┬к┬е├в ┬б┬а┬й├в┬о┬в: %f\n",modOfDiv);
 	roundedVal=round(modOfDiv);
-	//printf("Округленное значение: %d\n", roundedVal);
+	//printf("┼╜┬к├а├г┬г┬л┬е┬н┬н┬о┬е ┬з┬н┬а├з┬е┬н┬и┬е: %d\n", roundedVal);
 	numberOfIterations=(fileSize-modOfDiv)/sizeof(fileBuffer);
-	printf("Суммарное количество блоков размером %d байт на запись: %d\n",sizeof(fileBuffer),numberOfIterations);
+	printf("тАШ├г┬м┬м┬а├а┬н┬о┬е ┬к┬о┬л┬и├з┬е├б├в┬в┬о ┬б┬л┬о┬к┬о┬в ├а┬а┬з┬м┬е├а┬о┬м %d ┬б┬а┬й├в ┬н┬а ┬з┬а┬п┬и├б├м: %d\n",sizeof(fileBuffer),numberOfIterations);
 	lasstBufferMas=malloc(roundedVal);
 	if(lasstBufferMas!=NULL)
-	{printf("Задан размер буфера под остаток в %d байт\n",roundedVal+1);}
+	{printf("тАб┬а┬д┬а┬н ├а┬а┬з┬м┬е├а ┬б├г├д┬е├а┬а ┬п┬о┬д ┬о├б├в┬а├в┬о┬к ┬в %d ┬б┬а┬й├в\n",roundedVal+1);}
 	stopIteration=sizeof(fileBuffer);
 	fseek(FOut,0,SEEK_SET);
 	transferIndex=writeCalibrate(1,64,48,48);
@@ -256,7 +256,7 @@ int main(int argc, char* argv[])
 	while(writeIterations<numberOfIterations+2){
 		writeIterations++;
 		if(writeIterations>numberOfIterations){
-			printf("Запись остаточного блока №%d размером в %d байт\n",writeIterations,roundedVal);
+			printf("тАб┬а┬п┬и├б├м ┬о├б├в┬а├в┬о├з┬н┬о┬г┬о ┬б┬л┬о┬к┬а ├╝%d ├а┬а┬з┬м┬е├а┬о┬м ┬в %d ┬б┬а┬й├в\n",writeIterations,roundedVal);
 			stopIteration=roundedVal;}
 		memset(bufferMas,0x00,sizeof(bufferMas));
 		fseek(FIn,inputFileReadIndex,SEEK_SET);
@@ -291,8 +291,8 @@ int main(int argc, char* argv[])
 		transferIndex=0;}
 	summaryPacketLength=ftell(FOut);
 	transferIndex=ftell(FOut);
-	printf("Суммарный размер записанного файла: %d байт\n",transferIndex);
-	printf("Файл настроек convertParams.ini успешно создан\nТеперь необходимо запустить WAVBIND.EXE, чтобы сформировать WAV файл\n");
+	printf("тАШ├г┬м┬м┬а├а┬н├л┬й ├а┬а┬з┬м┬е├а ┬з┬а┬п┬и├б┬а┬н┬н┬о┬г┬о ├д┬а┬й┬л┬а: %d ┬б┬а┬й├в\n",transferIndex);
+	printf("тАЭ┬а┬й┬л ┬н┬а├б├в├а┬о┬е┬к convertParams.ini ├г├б┬п┬е├и┬н┬о ├б┬о┬з┬д┬а┬н\nтАЩ┬е┬п┬е├а├м ┬н┬е┬о┬б├е┬о┬д┬и┬м┬о ┬з┬а┬п├г├б├в┬и├в├м WAVBIND.EXE, ├з├в┬о┬б├л ├б├д┬о├а┬м┬и├а┬о┬в┬а├в├м WAV ├д┬а┬й┬л\n");
 	free(bufferMas);
 	fclose(FIn);
 	fclose(FOut);
