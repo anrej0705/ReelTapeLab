@@ -102,6 +102,7 @@ bool ahsoka;																																	//состояние функции проверки правил
 bool gabella;																																	//если 1 - информация в заголовок успешно записана, если 0 - произошло что-то такое что не дало записать
 bool Egor;																																		//состояние функции чтения из файла convertParams.ini
 bool doubledoor;																																//указатель состояния записи в файл, если 1 то все хорошо, если 0 то файл не был записан
+bool argFound=0;
 FILE* FSet;																																		//Указатель на файл с параметрами заголовка
 FILE* FRd;																																		//Указатель на файл с которого все будет читаться
 FILE* FWr;																																		//Указатель на файл в который будет идти запись, пока в коде не применен
@@ -192,11 +193,13 @@ int main(int argc, char *argv[])																												//описание main и ме
 	{
 		printf("Переключение кодовой страницы не требуется\n");
 	}
+	--argc;
+	++argv;
 	if(DebugMode==1)																															//проверка, включен ли режим отладки
 	{pringDebugMsg(36,0);}																														//если включен то вывод сообщения
 	pringDebugMsg(33,0);																														//уведомление о начале работы проги
 	pringDebugMsg(85,argc);																														//сообщение и количестве аргументов, полученных из командной строки
-	if(argc<=1)
+	if(argc<1)
 	{
 		pringDebugMsg(101,0);
 		printf(" Не указаны аргументы! Вызов справки -help\n");
@@ -204,11 +207,19 @@ int main(int argc, char *argv[])																												//описание main и ме
 	}
 	for(uint8_t i=0;i<argc;i++)
 	{
-		printf("argv %d %s\n",i,argv[i]);
-	}
-	for(uint8_t i=0;i<64;i++)
-	{
-		if(!(strcmp(argv[i], "-h")&&strcmp(argv[1], "-H")&&strcmp(argv[1], "-HELP")&&strcmp(argv[1], "-help")))
+		if(!(strcmp(argv[i], "-h")))
+		{
+			printHelpMsg();
+		}
+		else if(!(strcmp(argv[i], "-H")))
+		{
+			printHelpMsg();
+		}
+		else if(!(strcmp(argv[i], "-HELP")))
+		{
+			printHelpMsg();
+		}
+		else if(!(strcmp(argv[i], "-help")))
 		{
 			printHelpMsg();
 		}
@@ -222,18 +233,6 @@ int main(int argc, char *argv[])																												//описание main и ме
 			generateHead();
 			exit(1);
 		}
-		else
-		{
-			pringDebugMsg(101,0);
-			printf(" Неизвестный аргумент %s\n",argv);
-			exit(1);
-		}
-	}
-	if(argc<2)
-	{
-		printf("Не указано имя файла\n");
-		printf("Вызов справки -h, -H, -help, -HELP\n\n");
-		pringDebugMsg(84,0);
 	}
 	if(argc>4)
 	{
@@ -242,13 +241,13 @@ int main(int argc, char *argv[])																												//описание main и ме
 	}
 	printf(StartMsg);
 	printf(StartMsgTwo);
-	if(!(strcmp(argv[1], "-h")&&strcmp(argv[1], "-H")&&strcmp(argv[1], "-HELP")&&strcmp(argv[1], "-help")))
-	{
-		printHelpMsg();
-	}
 	printf("Второй аргумент отсутсвует, создается файл с именем по умолчанию\n\n");
-	FRd=fopen(argv[1], "rb");
-	fileLength=GetFileName(argv[1]);
+	FRd=fopen(argv[0], "rb");
+	if(FRd==NULL)
+	{
+		printf("Не удалось открыть файл %s\n",argv[0]);
+	}
+	fileLength=GetFileName(argv[0]);
 	transformFileName(fileName,fileLength,headerNameSuffix,sizeof(headerNameSuffix),fileNameHdrDat);											//генерируем имя файла с заголовком из исходника
 	transformFileName(fileName,fileLength,headerBodySuffix,sizeof(headerBodySuffix),fileNameBodDat);											//генерируем имя файла с телом из исходника
 	transformFileName(fileName,fileLength,headerConvSuffix,sizeof(headerConvSuffix),fileNameTgtDat);											//генерируем имя файла с телом из исходника
@@ -325,8 +324,8 @@ inline void writeDebugHeaderBuffer(void)																										//ф-кция копир
 		FileHeaderMSG[j]=FileHeader[j];																											//посимвольное копирование с сохранением адреса символа относительно начала массивов
 	}																																			//конец тела цикла
 }																																				//конец тела функции
-uint8_t GetFileName(char* nameOfFile) 																											//функция получения имени файла из пути
-{																																				//начало тела
+uint8_t GetFileName(char* nameOfFile)
+{
 	uint8_t symbolCountInFileName;																												//переменная хранящая длину имени файла, включая расширение
 	strcpy(fileNameRAW,nameOfFile);																												//дублирование строки в массив
 	uint8_t nameLenght = strlen(nameOfFile);																									//подсчет количества введеных символов
