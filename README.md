@@ -20,12 +20,12 @@
 |WAVPLAY.EXE|N/A|N/A|
 |MICREC.EXE|N/A|N/A|
 |BIN2AM.EXE|N/A|N/A|
-|BIN2FM.EXE|0.0.2|build 3|
+|BIN2FM.EXE|0.0.2|build 13|
 |AM2BIN.EXE|N/A|N/A|
-|FM2BIN.EXE|0.0.1|build 1|
+|FM2BIN.EXE|0.0.3|build 6|
 |WAVREST.EXE|N/A|N/A|
 |CALIBRAT.EXE|N/A|N/A|
-|WAVHEAD.EXE|0.2.7|build 39|
+|WAVHEAD.EXE|0.2.7|build 41|
 |WAVCONV.EXE|0.0.2|build 6|
 |WAVBIND.EXE|0.0.1|build 2|
 |APPSET.EXE|N/A|N/A|
@@ -84,12 +84,6 @@
 Набор из трех программ, предназначенный для подготовки оцифрованного файла к
 дальнейшей обработки
 
-Версии и номера сборок:
-|Название программы|Версия|Номер сборки|
-|:------------|:------:|:---------|
-|exHeader|0.2.7|build 39|
-|exConverter|0.0.2|build 6|
-|exStitcher|0.0.1|build 2|
 
 ## exHeader
 :ru:
