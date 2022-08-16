@@ -26,12 +26,14 @@ uint8_t GetFileName(char* inputPath, char *receivedName){
 			if(stepsTransfer==nameLenght)
 			{oname[stepsTransfer]=0x00;}
 			++stepsTransfer;}
+		oname[stepsTransfer]=0x00;
 		strcpy(receivedName,oname);
 		return stepsTransfer;}
 	while(entryPos<nameLenght){
 		oname[stepsTransfer]=iname[entryPos];
 		++entryPos;
 		++stepsTransfer;}
+	oname[stepsTransfer]=0x00;
 	strcpy(receivedName,oname);
 	return stepsTransfer;}
 inline uint32_t masrng(char* inputArr){
