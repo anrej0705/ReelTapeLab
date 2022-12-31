@@ -97,10 +97,10 @@ bool intmas(uint64_t inputValue, uint8_t valueRangeBytes, char *arrToStore){
 		case 0x08:{
 			arrToStore[0]=inputValue>>56;
 			arrToStore[1]=inputValue>>48;
-			arrToStore[2]=inputValue>>32;
-			arrToStore[3]=inputValue>>24;
-			arrToStore[4]=inputValue>>16;
-			arrToStore[5]=inputValue>>40;
+			arrToStore[2]=inputValue>>40;
+			arrToStore[3]=inputValue>>32;
+			arrToStore[4]=inputValue>>24;
+			arrToStore[5]=inputValue>>16;
 			arrToStore[6]=inputValue>>8;
 			arrToStore[7]=inputValue;
 			return 1;}}}
